@@ -9,6 +9,10 @@ on:
     tags:
       - "desktop-*"
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,7 +32,7 @@ jobs:
           set -o pipefail
           docker run --privileged --rm \
             -v "$GITHUB_WORKSPACE:/work" -w /work \
-            debian:trixie bash -euc '
+            debian:trixie bash -euxc '
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 live-build debian-archive-keyring xorriso squashfs-tools \
@@ -39,15 +43,20 @@ jobs:
               bash -x ./distro/build-iso.sh out
             ' 2>&1 | tee build.log
 
-      - name: Build log tail (visible via API summary)
+      - name: Post diagnostics (annotations + commit comment)
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          {
-            echo '## build.log (last 120 lines)'
-            echo '```'
-            tail -n 120 build.log || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          grep -E "E: |Unable|error|Error|failed|Failed|not found|denied|No such|Permission" build.log \
+            | tail -n 10 | sed 's/%/%25/g' \
+            | while IFS= read -r l; do echo "::error::$l"; done || true
+          tail -n 5 build.log | sed 's/%/%25/g' \
+            | while IFS= read -r l; do echo "::notice::TAIL: $l"; done || true
+          { echo "Build log tail (run ${GITHUB_RUN_ID})"; echo; echo '```';
+            tail -n 100 build.log || true; echo '```'; } > comment.md
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
+            -F body=@comment.md || true
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
