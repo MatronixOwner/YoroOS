@@ -21,6 +21,9 @@ WORK_DIR="$REPO_ROOT/distro/work"
 
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR" "$OUT_DIR"
+# OUT_DIR may be relative (e.g. "out" from CI): make it absolute BEFORE
+# changing into WORK_DIR, or the final copy of the ISO will fail.
+OUT_DIR=$(CDPATH= cd -- "$OUT_DIR" && pwd)
 cd "$WORK_DIR"
 
 lb config \
