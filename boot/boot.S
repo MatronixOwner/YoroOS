@@ -135,7 +135,7 @@ print:
 
 boot_drive:     .byte 0
 
-msg_loading:    .asciz "YoroOS Loader v0.1\r\nLoading kernel"
+msg_loading:    .asciz "YoroOS Loader v0.2\r\nLoading kernel"
 msg_ok:         .asciz " OK\r\nStarting YoroOS...\r\n"
 msg_noext:      .asciz "\r\nERROR: INT 13h extensions not supported.\r\nPress any key to reboot..."
 msg_diskerr:    .asciz "\r\nERROR: failed to read kernel from CD.\r\nPress any key to reboot..."

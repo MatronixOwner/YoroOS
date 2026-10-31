@@ -7,7 +7,7 @@
 #include "types.h"
 #include "vga.h"
 
-#define YOROOS_VERSION "0.1.0"
+#define YOROOS_VERSION "0.2.0"
 
 #define LINE_MAX 128
 #define HISTORY_MAX 16

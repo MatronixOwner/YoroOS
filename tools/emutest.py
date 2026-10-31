@@ -299,7 +299,7 @@ def main():
           b"YoroOS Loader" in machine.bios_out and b"OK" in machine.bios_out)
     check("kernel banner on screen", "YoroOS version" in snap(0))
     check("shell prompt shown", "yoro@YoroOS:~$" in snap(0))
-    check("'version' output", "YoroOS 0.1" in snap(1))
+    check("'version' output", "YoroOS 0.2" in snap(1))
     check("'cpu' output", "CPU vendor:" in snap(2))
     check("'mem' output", "Memory:" in snap(3) and "MiB" in snap(3))
     check("'date' output (fake RTC = 31.10.2026 14:30)",

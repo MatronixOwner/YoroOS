@@ -46,9 +46,28 @@ $(BUILD)/kernel.elf: $(KERNEL_OBJ) linker.ld
 $(BUILD)/kernel.bin: $(BUILD)/kernel.elf
 	$(OBJCOPY) -O binary $< $@
 
-# ---- ISO image (ISO9660 + El Torito, built by our own tool) ----
-$(ISO): $(BUILD)/boot.bin $(BUILD)/kernel.bin tools/mkiso.py
-	$(PYTHON) tools/mkiso.py $(BUILD)/boot.bin $(BUILD)/kernel.bin $@
+# ---- UEFI application (BOOTX64.EFI) for Hyper-V Gen2 / UEFI ----
+EFI_CFLAGS := -m64 -std=gnu11 -ffreestanding -fpic -fshort-wchar \
+              -mno-red-zone -fno-stack-protector -nostdlib \
+              -Wall -Wextra -O2
+
+$(BUILD)/efi_main.o: efi/efi_main.c efi/efi.h | $(BUILD)
+	$(CC) $(EFI_CFLAGS) -c $< -o $@
+
+$(BUILD)/BOOTX64.so: $(BUILD)/efi_main.o efi/efi.lds
+	$(LD) -shared -Bsymbolic -nostdlib -znocombreloc -T efi/efi.lds -o $@ $<
+
+$(BUILD)/BOOTX64.EFI: $(BUILD)/BOOTX64.so
+	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym \
+	    -j .dynstr -j .rel -j .rela -j .reloc \
+	    --target=efi-app-x86-64 $< $@
+
+$(BUILD)/efiboot.img: $(BUILD)/BOOTX64.EFI tools/mkefiboot.py
+	$(PYTHON) tools/mkefiboot.py $(BUILD)/BOOTX64.EFI $@
+
+# ---- ISO image (ISO9660 + El Torito BIOS+UEFI, built by our own tool) ----
+$(ISO): $(BUILD)/boot.bin $(BUILD)/kernel.bin $(BUILD)/efiboot.img tools/mkiso.py
+	$(PYTHON) tools/mkiso.py $(BUILD)/boot.bin $(BUILD)/kernel.bin $(BUILD)/efiboot.img $@
 	$(PYTHON) tools/verify_iso.py $@
 
 run: $(ISO)

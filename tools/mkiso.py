@@ -14,7 +14,7 @@ Before writing, the loader binary is patched: the magic dwords
 sector count of KERNEL.BIN inside the ISO, so the loader knows where
 to read the kernel from.
 
-Usage: mkiso.py <boot.bin> <kernel.bin> <output.iso>
+Usage: mkiso.py <boot.bin> <kernel.bin> <efiboot.img> <output.iso>
 """
 
 import struct
@@ -131,7 +131,7 @@ def build_path_table(big_endian):
     return bytes(sector), len(table)
 
 
-def build_root_dir(boot_size, kernel_size, now):
+def build_root_dir(boot_size, kernel_size, efi_lba, efi_size, now):
     sector = bytearray(SECTOR)
     records = b"".join(
         [
@@ -139,13 +139,14 @@ def build_root_dir(boot_size, kernel_size, now):
             dir_record(LBA_ROOTDIR, SECTOR, 2, b"\x01", now),
             dir_record(LBA_BOOTIMG, boot_size, 0, b"BOOT.BIN;1", now),
             dir_record(LBA_KERNEL, kernel_size, 0, b"KERNEL.BIN;1", now),
+            dir_record(efi_lba, efi_size, 0, b"EFIBOOT.IMG;1", now),
         ]
     )
     sector[: len(records)] = records
     return bytes(sector)
 
 
-def build_boot_catalog():
+def build_boot_catalog(efi_lba, efi_sectors512):
     catalog = bytearray(SECTOR)
 
     # Validation entry.
@@ -170,6 +171,23 @@ def build_boot_catalog():
     de[8:12] = struct.pack("<I", LBA_BOOTIMG)
     catalog[32:64] = de
 
+    # Section header: one more (final) section, UEFI platform.
+    sh = bytearray(32)
+    sh[0] = 0x91                                     # final section header
+    sh[1] = 0xEF                                     # platform: UEFI
+    sh[2:4] = struct.pack("<H", 1)                   # number of entries
+    sh[4:32] = b"YoroOS UEFI".ljust(28, b"\x00")
+    catalog[64:96] = sh
+
+    # UEFI boot entry: points to the FAT EFI system partition image.
+    ee = bytearray(32)
+    ee[0] = 0x88                                     # bootable
+    ee[1] = 0                                        # no emulation
+    ee[2:4] = struct.pack("<H", 0)                   # load segment
+    ee[6:8] = struct.pack("<H", efi_sectors512)      # image size / 512
+    ee[8:12] = struct.pack("<I", efi_lba)
+    catalog[96:128] = ee
+
     return bytes(catalog)
 
 
@@ -189,21 +207,28 @@ def patch_boot_image(boot, kernel_lba, kernel_sectors):
 
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         sys.exit(__doc__.splitlines()[-3].strip())
 
-    boot_path, kernel_path, out_path = sys.argv[1:]
+    boot_path, kernel_path, efi_path, out_path = sys.argv[1:]
 
     with open(boot_path, "rb") as f:
         boot = f.read()
     with open(kernel_path, "rb") as f:
         kernel = f.read()
+    with open(efi_path, "rb") as f:
+        efi_img = f.read()
 
     if len(boot) != SECTOR:
         sys.exit(f"mkiso: boot image must be {SECTOR} bytes, got {len(boot)}")
 
+    if len(efi_img) % SECTOR != 0:
+        sys.exit("mkiso: EFI boot image size must be a multiple of 2048")
+
     kernel_sectors = (len(kernel) + SECTOR - 1) // SECTOR
-    total_sectors = LBA_KERNEL + kernel_sectors
+    efi_lba = LBA_KERNEL + kernel_sectors
+    efi_sectors = len(efi_img) // SECTOR
+    total_sectors = efi_lba + efi_sectors
     now = datetime.datetime.now()
 
     boot = patch_boot_image(boot, LBA_KERNEL, kernel_sectors)
@@ -222,10 +247,12 @@ def main():
     put(LBA_TERM, build_terminator())
     put(LBA_PATH_L, path_l)
     put(LBA_PATH_M, path_m)
-    put(LBA_ROOTDIR, build_root_dir(len(boot), len(kernel), now))
-    put(LBA_BOOTCAT, build_boot_catalog())
+    put(LBA_ROOTDIR,
+        build_root_dir(len(boot), len(kernel), efi_lba, len(efi_img), now))
+    put(LBA_BOOTCAT, build_boot_catalog(efi_lba, len(efi_img) // 512))
     put(LBA_BOOTIMG, boot)
     put(LBA_KERNEL, kernel_padded)
+    put(efi_lba, efi_img)
 
     with open(out_path, "wb") as f:
         f.write(image)
@@ -235,6 +262,8 @@ def main():
     print(f"  boot image : LBA {LBA_BOOTIMG}, {len(boot)} bytes")
     print(f"  kernel     : LBA {LBA_KERNEL}, {len(kernel)} bytes"
           f" ({kernel_sectors} sectors)")
+    print(f"  efi image  : LBA {efi_lba}, {len(efi_img)} bytes"
+          f" ({efi_sectors} sectors)")
 
 
 if __name__ == "__main__":
