@@ -34,10 +34,7 @@ lb config \
     --memtest none \
     --iso-application "YoroOS Desktop" \
     --iso-volume "YOROOS" \
-    --hostname yoroos \
-    --username yoro \
-    --locales "ru_RU.UTF-8,en_US.UTF-8" \
-    --keyboard-layouts "us,ru"
+    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru"
 
 # ---- package selection -------------------------------------------------
 mkdir -p config/package-lists
