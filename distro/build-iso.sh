@@ -27,7 +27,7 @@ lb config \
     --mode debian \
     --distribution trixie \
     --binary-images iso-hybrid \
-    --bootloaders "syslinux,grub-efi" \
+    --bootloaders "grub-efi" \
     --archive-areas "main contrib non-free non-free-firmware" \
     --apt-recommends true \
     --debian-installer false \
