@@ -5,6 +5,9 @@ name: Build YoroOS Desktop ISO (Linux)
 # artifact. Takes a while (large download of Debian packages).
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "desktop-*"
 
 jobs:
   build:
