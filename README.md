@@ -67,6 +67,20 @@ ISO на диск/флешку (Ventoy / Rufus). BIOS/Legacy — ядро, UEFI 
 ⚠️ Раскладка клавиатуры пока только **US**. В UEFI-версии `date` показывает время
 прошивки ВМ (у Hyper-V это UTC хоста).
 
+## 🖥 YoroOS Desktop — Linux-редакция (новое направление, 50/50)
+
+По просьбе владельца YoroOS становится гибридом:
+
+- **50% Linux:** дистрибутив на **Debian 13 + KDE Plasma** (красивый и плавный
+  интерфейс), **Chromium**, **Wine** для Windows-программ.
+- **50% своё:** собственное ядро *YoroOS Core* (текущий ISO выше) вторым режимом
+  загрузки + собственный набор приложений на Qt6: **Блокнот, Центр Настроек,
+  Медиаплеер, Файлы, Консоль, Мой компьютер, Корзина** (папка [`desktop/`](desktop/)).
+
+Полный ISO дистрибутива собирается скриптом [`distro/build-iso.sh`](distro/build-iso.sh)
+(live-build) или в GitHub Actions — workflow **“Build YoroOS Desktop ISO (Linux)”**,
+готовый образ лежит в артефактах запуска. Подробнее: [`desktop/README.md`](desktop/README.md).
+
 ## 🛠 Сборка из исходников
 
 Нужны только `gcc`, `binutils` и `python3` — ни GRUB, ни xorriso, ни nasm, ни gnu-efi:

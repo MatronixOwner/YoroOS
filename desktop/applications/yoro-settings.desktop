@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Центр Настроек Yoro
+Name[ru]=Центр Настроек Yoro
+Comment=Настройки YoroOS
+Exec=yoro-settings
+Icon=preferences-system
+Categories=Settings;
+Terminal=false
+StartupNotify=true

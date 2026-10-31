@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Мой компьютер
+Name[ru]=Мой компьютер
+Comment=Диски, папки и сведения о ПК
+Exec=yoro-computer
+Icon=computer
+Categories=System;
+Terminal=false
+StartupNotify=true

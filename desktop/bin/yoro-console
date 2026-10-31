@@ -1,0 +1,8 @@
+#!/bin/sh
+# Launcher for Yoro app 'console' (works both from the repo and installed).
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -d "$DIR/yoroapps" ]; then
+  PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m yoroapps.console "$@"
+else
+  PYTHONPATH="/usr/share/yoroos${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m yoroapps.console "$@"
+fi

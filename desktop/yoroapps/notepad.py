@@ -1,0 +1,116 @@
+"""Yoro Блокнот — simple text editor."""
+
+import os
+import sys
+
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import (QApplication, QFileDialog, QMainWindow,
+                             QMessageBox, QPlainTextEdit)
+
+from yoroapps import style
+
+
+class Notepad(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.path = None
+        self.setWindowTitle("Yoro Блокнот")
+        self.resize(760, 520)
+
+        self.editor = QPlainTextEdit()
+        self.editor.setStyleSheet("font-family: 'Noto Sans Mono', monospace;")
+        self.setCentralWidget(self.editor)
+        self.editor.textChanged.connect(self._update_status)
+
+        toolbar = self.addToolBar("Файл")
+        for text, slot in (("Новый", self.new_file), ("Открыть…", self.open_file),
+                           ("Сохранить", self.save_file),
+                           ("Сохранить как…", self.save_file_as)):
+            action = QAction(text, self)
+            action.triggered.connect(slot)
+            toolbar.addAction(action)
+
+        self.statusBar().showMessage("Готов")
+
+    def _update_status(self):
+        text = self.editor.toPlainText()
+        words = len(text.split())
+        self.statusBar().showMessage(
+            f"Символов: {len(text)}   Слов: {words}")
+
+    def _maybe_save(self):
+        if not self.editor.document().isModified():
+            return True
+        answer = QMessageBox.question(
+            self, "Yoro Блокнот", "Сохранить изменения?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel)
+        if answer == QMessageBox.StandardButton.Save:
+            return self.save_file()
+        return answer == QMessageBox.StandardButton.Discard
+
+    def new_file(self):
+        if self._maybe_save():
+            self.editor.clear()
+            self.path = None
+            self.setWindowTitle("Yoro Блокнот")
+
+    def open_file(self):
+        if not self._maybe_save():
+            return
+        path, _ = QFileDialog.getOpenFileName(self, "Открыть файл")
+        if path:
+            self.load(path)
+
+    def load(self, path):
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                self.editor.setPlainText(f.read())
+        except OSError as exc:
+            QMessageBox.critical(self, "Ошибка", str(exc))
+            return
+        self.path = path
+        self.editor.document().setModified(False)
+        self.setWindowTitle(f"Yoro Блокнот — {os.path.basename(path)}")
+
+    def save_file(self):
+        if self.path is None:
+            return self.save_file_as()
+        try:
+            with open(self.path, "w", encoding="utf-8") as f:
+                f.write(self.editor.toPlainText())
+        except OSError as exc:
+            QMessageBox.critical(self, "Ошибка", str(exc))
+            return False
+        self.editor.document().setModified(False)
+        self.statusBar().showMessage(f"Сохранено: {self.path}")
+        return True
+
+    def save_file_as(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл")
+        if not path:
+            return False
+        self.path = path
+        self.editor.document().setModified(False)
+        self.setWindowTitle(f"Yoro Блокнот — {os.path.basename(path)}")
+        return self.save_file()
+
+    def closeEvent(self, event):
+        if self._maybe_save():
+            event.accept()
+        else:
+            event.ignore()
+
+
+def main():
+    app = QApplication(sys.argv)
+    app.setStyleSheet(style.get_stylesheet())
+    window = Notepad()
+    if len(sys.argv) > 1:
+        window.load(sys.argv[1])
+    window.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

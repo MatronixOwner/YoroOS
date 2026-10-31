@@ -1,0 +1,6 @@
+#!/bin/sh
+# Yoro Browser launcher: Chromium preferred.
+for b in chromium chromium-browser google-chrome-stable google-chrome firefox; do
+  if command -v "$b" >/dev/null 2>&1; then exec "$b" "$@"; fi
+done
+exec xdg-open "about:blank"

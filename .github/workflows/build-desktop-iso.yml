@@ -1,0 +1,43 @@
+name: Build YoroOS Desktop ISO (Linux)
+
+# Manual trigger: builds the big desktop ISO (KDE + Chromium + Wine)
+# inside a Debian container on the GitHub runner and stores it as an
+# artifact. Takes a while (large download of Debian packages).
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                      /opt/hostedtoolcache/CodeQL || true
+          df -h
+
+      - name: Build ISO in Debian (trixie) container
+        run: |
+          docker run --privileged --rm \
+            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            debian:trixie bash -euc '
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                live-build debian-archive-keyring xorriso squashfs-tools \
+                syslinux isolinux grub-pc-bin grub-efi-amd64-bin \
+                shim-signed ca-certificates sudo
+              ./distro/build-iso.sh out
+            '
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          path: |
+            out/yoroos-desktop-amd64.iso
+            out/yoroos-desktop-amd64.iso.sha256
+          if-no-files-found: error

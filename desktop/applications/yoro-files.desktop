@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yoro Файлы
+Name[ru]=Yoro Файлы
+Comment=Файловый менеджер
+Exec=yoro-files
+Icon=system-file-manager
+Categories=System;FileManager;
+Terminal=false
+StartupNotify=true

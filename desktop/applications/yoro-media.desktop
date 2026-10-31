@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yoro Медиа
+Name[ru]=Yoro Медиа
+Comment=Медиаплеер
+Exec=yoro-media
+Icon=multimedia-video-player
+Categories=AudioVideo;Player;
+Terminal=false
+StartupNotify=true

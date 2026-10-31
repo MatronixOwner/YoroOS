@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yoro Блокнот
+Name[ru]=Yoro Блокнот
+Comment=Текстовый редактор
+Exec=yoro-notepad
+Icon=accessories-text-editor
+Categories=Utility;TextEditor;
+Terminal=false
+StartupNotify=true

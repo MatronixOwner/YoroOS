@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Корзина
+Name[ru]=Корзина
+Comment=Удалённые файлы
+Exec=yoro-trash
+Icon=user-trash
+Categories=System;
+Terminal=false
+StartupNotify=true
