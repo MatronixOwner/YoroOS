@@ -47,7 +47,7 @@ konsole
 ark
 okular
 gwenview
-spectacle
+kde-spectacle
 sddm
 # Browser
 chromium
