@@ -2,9 +2,9 @@
 Type=Application
 Name=Yoro Медиа
 Name[ru]=Yoro Медиа
-Comment=Медиаплеер
+Comment=Медиаплеер YoroOS
 Exec=yoro-media
-Icon=multimedia-video-player
+Icon=yoro-media
 Categories=AudioVideo;Player;
 Terminal=false
 StartupNotify=true

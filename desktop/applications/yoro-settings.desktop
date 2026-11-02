@@ -2,9 +2,9 @@
 Type=Application
 Name=Центр Настроек Yoro
 Name[ru]=Центр Настроек Yoro
-Comment=Настройки YoroOS
+Comment=Настройки и кастомизация YoroOS
 Exec=yoro-settings
-Icon=preferences-system
+Icon=yoro-settings
 Categories=Settings;
 Terminal=false
 StartupNotify=true

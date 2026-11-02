@@ -18,7 +18,9 @@ YoroOS теперь гибрид **50/50**:
 | `yoro-console` | 🖥 Консоль — команды bash + `yoro`, `yoro-apps`, `yoro-help` |
 | `yoro-computer` | 💻 Мой компьютер — диски, папки, сведения о системе |
 | `yoro-trash` | 🗑 Корзина — восстановить / удалить навсегда / очистить |
-| `yoro-browser` | 🌐 Браузер — запускает Chromium |
+| `matronix-browser` | 🌐 Matronix Browser — свой браузер (движок Chromium/QtWebEngine) |
+| `yoro-calculator` | 🧮 Калькулятор |
+| `yoro-paint` | 🎨 Paint — рисование |
 
 Запуск из исходников (нужен `python3-pyqt6` и `python3-pyqt6.qtmultimedia`):
 
@@ -42,7 +44,8 @@ sudo ./distro/build-iso.sh        # -> out/yoroos-desktop-amd64.iso
 **“Build YoroOS Desktop ISO (Linux)”** → Run workflow → ISO появится
 в артефактах запуска.
 
-Образ: Debian 13 (trixie), KDE Plasma + SDDM, Chromium, Wine (+wine32),
+Образ: Debian 13 (trixie), только оболочка KDE Plasma + SDDM (чужие
+программы вырезаны — вместо них приложения Yoro выше), Wine (+wine32),
 Yoro-приложения, русская локаль и раскладки RU/US, загрузка BIOS+UEFI
 (подписанный Debian shim — работает на Hyper-V Gen2 с Secure Boot).
 

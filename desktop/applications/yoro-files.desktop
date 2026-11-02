@@ -2,9 +2,9 @@
 Type=Application
 Name=Yoro Файлы
 Name[ru]=Yoro Файлы
-Comment=Файловый менеджер
+Comment=Файловый менеджер YoroOS
 Exec=yoro-files
-Icon=system-file-manager
+Icon=yoro-files
 Categories=System;FileManager;
 Terminal=false
 StartupNotify=true

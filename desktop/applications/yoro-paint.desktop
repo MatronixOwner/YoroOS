@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yoro Paint
+Name[ru]=Yoro Paint
+Comment=Рисование
+Exec=yoro-paint
+Icon=yoro-paint
+Categories=Graphics;
+Terminal=false
+StartupNotify=true

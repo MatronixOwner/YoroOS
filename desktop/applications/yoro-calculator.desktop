@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yoro Калькулятор
+Name[ru]=Yoro Калькулятор
+Comment=Калькулятор YoroOS
+Exec=yoro-calculator
+Icon=yoro-calculator
+Categories=Utility;Calculator;
+Terminal=false
+StartupNotify=true

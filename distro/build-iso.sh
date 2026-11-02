@@ -32,7 +32,7 @@ lb config \
     --binary-images iso-hybrid \
     --bootloaders "grub-efi" \
     --archive-areas "main contrib non-free non-free-firmware" \
-    --apt-recommends true \
+    --apt-recommends false \
     --debian-installer false \
     --memtest none \
     --iso-application "YoroOS Desktop" \
@@ -42,28 +42,33 @@ lb config \
 # ---- package selection -------------------------------------------------
 mkdir -p config/package-lists
 cat > config/package-lists/yoro.list.chroot <<'EOF'
-# KDE Plasma desktop (beautiful & smooth), login manager
-kde-plasma-desktop
-plasma-discover
-dolphin
-konsole
-ark
-okular
-gwenview
-kde-spectacle
+# ONLY the Plasma shell core - user applications are our own Yoro apps.
+plasma-desktop
+plasma-workspace
+plasma-nm
+plasma-pa
+powerdevil
+kscreen
+systemsettings
+polkit-kde-agent-1
+xdg-desktop-portal
+xdg-desktop-portal-kde
 sddm
-# Browser
-chromium
+sddm-theme-breeze
+breeze-icon-theme
+xorg
+upower
+udisks2
+qdbus-qt6
 # Windows programs support
 wine
-wine64
 winetricks
-# Yoro apps runtime
+# Yoro apps runtime (incl. Matronix Browser engine)
 python3-pyqt6
 python3-pyqt6.qtmultimedia
+python3-pyqt6.qtwebengine
 # System basics
 network-manager
-plasma-nm
 pipewire
 wireplumber
 sudo
@@ -85,22 +90,35 @@ INC=config/includes.chroot
 mkdir -p "$INC/usr/share/yoroos" "$INC/usr/local/bin" "$INC/usr/share/applications"
 cp -r "$REPO_ROOT/desktop/yoroapps" "$INC/usr/share/yoroos/"
 cp "$REPO_ROOT"/desktop/applications/*.desktop "$INC/usr/share/applications/"
+mkdir -p "$INC/usr/share/icons/hicolor/scalable/apps" "$INC/usr/share/wallpapers/YoroOS" "$INC/etc/xdg/autostart"
+cp "$REPO_ROOT"/desktop/icons/*.svg "$INC/usr/share/icons/hicolor/scalable/apps/"
+cp "$REPO_ROOT"/desktop/wallpapers/*.jpg "$INC/usr/share/wallpapers/YoroOS/"
+cat > "$INC/etc/xdg/autostart/yoro-panel-setup.desktop" <<'EOS'
+[Desktop Entry]
+Type=Application
+Name=Yoro Panel Setup
+Exec=yoro-panel-setup
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true
+EOS
 
-for app in notepad files media settings console computer trashapp; do
-    bin="yoro-$(echo "$app" | sed 's/trashapp/trash/')"
+for pair in notepad:yoro-notepad files:yoro-files media:yoro-media \
+        settings:yoro-settings console:yoro-console computer:yoro-computer \
+        trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint \
+        browser:matronix-browser panelsetup:yoro-panel-setup; do
+    app="${pair%%:*}"; bin="${pair##*:}"
     cat > "$INC/usr/local/bin/$bin" <<EOF
 #!/bin/sh
 PYTHONPATH="/usr/share/yoroos" exec python3 -m yoroapps.$app "\$@"
 EOF
     chmod +x "$INC/usr/local/bin/$bin"
 done
-cp "$REPO_ROOT/desktop/bin/yoro-browser" "$INC/usr/local/bin/yoro-browser"
-chmod +x "$INC/usr/local/bin/yoro-browser"
 
 # Desktop shortcuts for the live user.
 mkdir -p "$INC/etc/skel/Desktop"
 cp "$REPO_ROOT/desktop/applications/yoro-computer.desktop" "$INC/etc/skel/Desktop/"
-cp "$REPO_ROOT/desktop/applications/yoro-browser.desktop" "$INC/etc/skel/Desktop/"
+cp "$REPO_ROOT/desktop/applications/matronix-browser.desktop" "$INC/etc/skel/Desktop/"
 cp "$REPO_ROOT/desktop/applications/yoro-trash.desktop" "$INC/etc/skel/Desktop/"
 chmod +x "$INC"/etc/skel/Desktop/*.desktop
 
@@ -120,6 +138,7 @@ cat > config/hooks/normal/9100-yoro.hook.chroot <<'EOF'
 #!/bin/sh
 set -e
 update-desktop-database /usr/share/applications || true
+gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
 # 32-bit Windows support is optional; do not fail the build over it.
 if dpkg --add-architecture i386 2>/dev/null; then
     apt-get update || true
