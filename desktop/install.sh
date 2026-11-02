@@ -11,7 +11,7 @@ cp -r "$HERE/yoroapps" "$D/usr/share/yoroos/"
 for pair in notepad:yoro-notepad files:yoro-files media:yoro-media \
         settings:yoro-settings console:yoro-console computer:yoro-computer \
         trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint \
-        browser:matronix-browser panelsetup:yoro-panel-setup; do
+        panelsetup:yoro-panel-setup; do
     app="${pair%%:*}"; bin="${pair##*:}"
     cat > "$D/usr/local/bin/$bin" <<EOF
 #!/bin/sh
@@ -19,6 +19,16 @@ PYTHONPATH="/usr/share/yoroos\${PYTHONPATH:+:\$PYTHONPATH}" exec python3 -m yoro
 EOF
     chmod +x "$D/usr/local/bin/$bin"
 done
+
+# Matronix Browser (vendored, see matronix-browser/SOURCE.txt)
+install -d "$D/usr/share/matronix-browser"
+cp "$HERE/matronix-browser/matronix.py" "$D/usr/share/matronix-browser/"
+cp -r "$HERE/matronix-browser/assets" "$D/usr/share/matronix-browser/"
+cat > "$D/usr/local/bin/matronix-browser" <<'EOFM'
+#!/bin/sh
+exec python3 /usr/share/matronix-browser/matronix.py "$@"
+EOFM
+chmod +x "$D/usr/local/bin/matronix-browser"
 
 cp "$HERE"/applications/*.desktop "$D/usr/share/applications/"
 install -d "$D/usr/share/icons/hicolor/scalable/apps" "$D/usr/share/wallpapers/YoroOS" "$D/etc/xdg/autostart"
@@ -36,4 +46,4 @@ EOF2
 if [ -z "$D" ] && command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database /usr/share/applications || true
 fi
-echo "Yoro applications installed (need: python3-pyqt6, python3-pyqt6.qtmultimedia)."
+echo "Yoro applications installed (need: python3-pyqt6, python3-pyqt6.qtmultimedia, python3-pyside6.* for Matronix Browser)."

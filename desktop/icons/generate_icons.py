@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the YoroOS/Matronix SVG app icon set (consistent flat style).
+"""Generate the YoroOS SVG app icon set (consistent flat style).
+
+Note: matronix-browser.svg is NOT generated here - it is the real
+upstream logo copied from MatronixOwner/Matronix_Browser (assets/logo.svg).
 
 Every icon: 64x64, rounded-square tile with a two-stop diagonal
 gradient and a simple white glyph. Run: python3 generate_icons.py
@@ -80,13 +83,6 @@ GLYPHS = {
         '<circle cx="36" cy="21" r="3.4" fill="#f5a623"/>'
         '<circle cx="21" cy="37" r="3.4" fill="#2fa8e0"/>'
         '<circle cx="29" cy="45" r="3.4" fill="#2ecc71"/></g>'),
-    "matronix-browser": ("#3daee9", "#155eef",
-        '<circle cx="32" cy="32" r="19" fill="none" stroke="#fff" '
-        'stroke-width="4"/>'
-        '<ellipse cx="32" cy="32" rx="9" ry="19" fill="none" stroke="#fff" '
-        'stroke-width="3"/>'
-        '<path d="M13.5 26 h37 M13.5 38 h37" stroke="#fff" stroke-width="3"/>'
-        '<circle cx="32" cy="32" r="3.2" fill="#fff"/>'),
 }
 
 

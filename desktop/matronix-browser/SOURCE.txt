@@ -1,0 +1,8 @@
+Matronix Browser — vendored snapshot for YoroOS Desktop.
+Upstream: https://github.com/MatronixOwner/Matronix_Browser
+Commit:   b4a94cb (Matronix_Browser 1.0)
+Imported: 2026-11-03 (files: matronix.py, assets/logo.svg, assets/logo.png,
+          requirements.txt, README.md -> README.upstream.md)
+Runtime on YoroOS: Python 3 + PySide6 (Debian packages python3-pyside6.*)
+                   + python3-cryptography.
+Update: copy a newer matronix.py (+assets) from upstream over these files.

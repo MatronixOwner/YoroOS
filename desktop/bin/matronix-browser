@@ -1,8 +1,8 @@
 #!/bin/sh
-# Launcher for Yoro app 'browser' (works both from the repo and installed).
+# Matronix Browser launcher (vendored from MatronixOwner/Matronix_Browser).
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-if [ -d "$DIR/yoroapps" ]; then
-  PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m yoroapps.browser "$@"
+if [ -f "$DIR/matronix-browser/matronix.py" ]; then
+  exec python3 "$DIR/matronix-browser/matronix.py" "$@"
 else
-  PYTHONPATH="/usr/share/yoroos${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m yoroapps.browser "$@"
+  exec python3 /usr/share/matronix-browser/matronix.py "$@"
 fi

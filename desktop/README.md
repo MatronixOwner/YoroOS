@@ -18,7 +18,7 @@ YoroOS теперь гибрид **50/50**:
 | `yoro-console` | 🖥 Консоль — команды bash + `yoro`, `yoro-apps`, `yoro-help` |
 | `yoro-computer` | 💻 Мой компьютер — диски, папки, сведения о системе |
 | `yoro-trash` | 🗑 Корзина — восстановить / удалить навсегда / очистить |
-| `matronix-browser` | 🌐 Matronix Browser — свой браузер (движок Chromium/QtWebEngine) |
+| `matronix-browser` | 🌐 **Matronix Browser** — браузер автора из репозитория [Matronix_Browser](https://github.com/MatronixOwner/Matronix_Browser), встроен снимком в `desktop/matronix-browser/` (PySide6/Qt WebEngine) |
 | `yoro-calculator` | 🧮 Калькулятор |
 | `yoro-paint` | 🎨 Paint — рисование |
 

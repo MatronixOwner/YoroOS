@@ -66,7 +66,14 @@ winetricks
 # Yoro apps runtime (incl. Matronix Browser engine)
 python3-pyqt6
 python3-pyqt6.qtmultimedia
-python3-pyqt6.qtwebengine
+# Matronix Browser runtime (author's own browser, PySide6)
+python3-pyside6.qtcore
+python3-pyside6.qtgui
+python3-pyside6.qtwidgets
+python3-pyside6.qtsvg
+python3-pyside6.qtwebchannel
+python3-pyside6.qtwebengine
+python3-cryptography
 # System basics
 network-manager
 pipewire
@@ -106,7 +113,7 @@ EOS
 for pair in notepad:yoro-notepad files:yoro-files media:yoro-media \
         settings:yoro-settings console:yoro-console computer:yoro-computer \
         trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint \
-        browser:matronix-browser panelsetup:yoro-panel-setup; do
+        panelsetup:yoro-panel-setup; do
     app="${pair%%:*}"; bin="${pair##*:}"
     cat > "$INC/usr/local/bin/$bin" <<EOF
 #!/bin/sh
@@ -115,12 +122,31 @@ EOF
     chmod +x "$INC/usr/local/bin/$bin"
 done
 
+# Matronix Browser (vendored, see desktop/matronix-browser/SOURCE.txt)
+mkdir -p "$INC/usr/share/matronix-browser"
+cp "$REPO_ROOT/desktop/matronix-browser/matronix.py" "$INC/usr/share/matronix-browser/"
+cp -r "$REPO_ROOT/desktop/matronix-browser/assets" "$INC/usr/share/matronix-browser/"
+cat > "$INC/usr/local/bin/matronix-browser" <<'EOFM'
+#!/bin/sh
+exec python3 /usr/share/matronix-browser/matronix.py "$@"
+EOFM
+chmod +x "$INC/usr/local/bin/matronix-browser"
+
 # Desktop shortcuts for the live user.
 mkdir -p "$INC/etc/skel/Desktop"
 cp "$REPO_ROOT/desktop/applications/yoro-computer.desktop" "$INC/etc/skel/Desktop/"
 cp "$REPO_ROOT/desktop/applications/matronix-browser.desktop" "$INC/etc/skel/Desktop/"
 cp "$REPO_ROOT/desktop/applications/yoro-trash.desktop" "$INC/etc/skel/Desktop/"
 chmod +x "$INC"/etc/skel/Desktop/*.desktop
+
+# Matronix Browser is the default web browser.
+mkdir -p "$INC/etc/skel/.config"
+cat > "$INC/etc/skel/.config/mimeapps.list" <<'EOS2'
+[Default Applications]
+text/html=matronix-browser.desktop
+x-scheme-handler/http=matronix-browser.desktop
+x-scheme-handler/https=matronix-browser.desktop
+EOS2
 
 # Branding (keep Debian base identity via ID_LIKE for tooling).
 cat > "$INC/etc/os-release" <<'EOF'
