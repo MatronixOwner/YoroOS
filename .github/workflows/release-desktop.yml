@@ -1,0 +1,64 @@
+name: Publish YoroOS Desktop pre-release
+
+# Triggered by tags like desktop-1.0-pre1.
+# Takes the ISO built by a previous successful "Build YoroOS Desktop ISO"
+# run (RUN_ID below — update it for the next pre-release) and publishes
+# it as a GitHub pre-release with the ISO attached for direct download.
+on:
+  push:
+    tags:
+      - "desktop-*-pre*"
+
+permissions:
+  contents: write   # create the release
+  actions: read     # download the artifact from the build run
+
+env:
+  # desktop-1.0-pre1 ISO was built by run #41534674163 (tag desktop-1.0-dev8)
+  BUILD_RUN_ID: "41534674163"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download ISO from build run
+        uses: actions/download-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          run-id: ${{ env.BUILD_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: release-files
+
+      - name: Prepare release files
+        run: |
+          ver="${GITHUB_REF_NAME#desktop-}"          # 1.0-pre1
+          mv release-files/yoroos-desktop-amd64.iso \
+             "release-files/yoroos-desktop-${ver}-amd64.iso"
+          rm -f release-files/yoroos-desktop-amd64.iso.sha256
+          (cd release-files && sha256sum *.iso > SHA256SUMS.txt)
+          ls -lh release-files
+
+      - name: Create GitHub pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver="${GITHUB_REF_NAME#desktop-}"
+          notes="distro/release-notes-${ver}.md"
+          if [ -f "$notes" ]; then
+            gh release create "$GITHUB_REF_NAME" \
+              release-files/*.iso release-files/SHA256SUMS.txt \
+              --prerelease \
+              --title "YoroOS Desktop ${ver} (Pre-release)" \
+              --notes-file "$notes" \
+              --verify-tag
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              release-files/*.iso release-files/SHA256SUMS.txt \
+              --prerelease \
+              --title "YoroOS Desktop ${ver} (Pre-release)" \
+              --generate-notes \
+              --verify-tag
+          fi
