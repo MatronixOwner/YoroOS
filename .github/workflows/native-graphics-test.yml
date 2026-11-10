@@ -1,0 +1,54 @@
+name: Native UEFI graphics test
+on:
+  push:
+    branches: ['arena/**']
+    paths: ['native64/**', 'efi/**', 'tests/native64_render_test.c', 'Makefile', '.github/workflows/native-graphics-test.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test graphics
+        run: |
+          make graphics-iso test-graphics test
+          if readelf -r build/graphics.so | grep -q 'R_X86_64'; then
+            echo 'Unexpected dynamic relocations in EFI image'; exit 1
+          fi
+      - name: Install QEMU and OVMF
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf
+      - name: Boot UEFI and check kernel marker
+        run: |
+          set +e
+          timeout 50s qemu-system-x86_64 -machine q35 -m 256 \
+            -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd \
+            -cdrom build/yoroos-native-graphical.iso -boot d \
+            -display none -monitor none -serial file:build/serial.log -no-reboot
+          code=$?
+          set -e
+          echo "QEMU exit status: $code"
+          echo '--- Serial output ---'
+          cat build/serial.log || true
+          echo '---------------------'
+          grep -q 'YORO_NATIVE64_RENDERED' build/serial.log
+      - name: Diagnostic comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          text="Native UEFI graphics test failed: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ -f build/serial.log ]; then
+            text="$text$(printf '\n\nSerial output:\n')$(tail -c 3000 build/serial.log)"
+          fi
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -f body="$text" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-graphics-test
+          path: |
+            build/yoroos-native-graphical.iso
+            build/serial.log
+          if-no-files-found: ignore

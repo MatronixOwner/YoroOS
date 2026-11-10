@@ -100,6 +100,14 @@ struct EFI_BOOT_SERVICES {
     void *GetNextMonotonicCount;
     void *Stall;
     void *SetWatchdogTimer; /* (Timeout, Code, DataSize, Data) */
+    void *ConnectController;
+    void *DisconnectController;
+    void *OpenProtocol;
+    void *CloseProtocol;
+    void *OpenProtocolInformation;
+    void *ProtocolsPerHandle;
+    void *LocateHandleBuffer;
+    void *LocateProtocol;
 };
 
 struct EFI_MEMORY_DESCRIPTOR {
