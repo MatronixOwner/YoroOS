@@ -92,7 +92,7 @@ test: | $(BUILD)
 	$(BUILD)/yorofs-test
 
 # Separate experimental UEFI x86-64 graphical image. BIOS retains the old shell.
-NATIVE64_FLAGS := $(EFI_CFLAGS) -mno-sse -mno-sse2 -mno-mmx -msoft-float
+NATIVE64_FLAGS := $(EFI_CFLAGS) -mno-sse -mno-sse2 -mno-mmx -msoft-float -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables
 $(BUILD)/graphics_boot.o: efi/graphics_boot.c efi/efi.h native64/bootinfo.h | $(BUILD)
 	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
 $(BUILD)/native64_kernel.o: native64/kernel.c native64/bootinfo.h | $(BUILD)
@@ -101,10 +101,8 @@ $(BUILD)/native64_render.o: native64/render.c native64/bootinfo.h | $(BUILD)
 	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
 $(BUILD)/native64_entry.o: native64/entry.S | $(BUILD)
 	$(CC) -m64 -c $< -o $@
-$(BUILD)/graphics.so: $(BUILD)/graphics_boot.o $(BUILD)/native64_kernel.o $(BUILD)/native64_render.o $(BUILD)/native64_entry.o efi/efi.lds
-	$(LD) -shared -Bsymbolic -nostdlib -znocombreloc -T efi/efi.lds -o $@ $(filter %.o,$^)
-$(BUILD)/graphics.EFI: $(BUILD)/graphics.so
-	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .dynstr -j .rel -j .rela -j .reloc --target=efi-app-x86-64 $< $@
+$(BUILD)/graphics.EFI: $(BUILD)/graphics_boot.o $(BUILD)/native64_kernel.o $(BUILD)/native64_render.o $(BUILD)/native64_entry.o
+	$(LD) -mi386pep --subsystem 10 --entry efi_main --no-insert-timestamp -o $@ $(filter %.o,$^)
 $(BUILD)/graphics-efiboot.img: $(BUILD)/graphics.EFI tools/mkefiboot.py
 	$(PYTHON) tools/mkefiboot.py $< $@
 $(BUILD)/yoroos-native-graphical.iso: $(BUILD)/boot.bin $(BUILD)/kernel.bin $(BUILD)/graphics-efiboot.img tools/mkiso.py
