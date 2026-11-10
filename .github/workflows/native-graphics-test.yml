@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install QEMU, compiler and OVMF
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-multilib qemu-system-x86 ovmf
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-multilib binutils-multiarch qemu-system-x86 ovmf
       - name: Build and test graphics
         run: |
           set -o pipefail
