@@ -1,3 +1,4 @@
+#include "yorofs.h"
 #include "shell.h"
 #include "cpu.h"
 #include "io.h"
@@ -7,7 +8,7 @@
 #include "types.h"
 #include "vga.h"
 
-#define YOROOS_VERSION "0.2.0"
+#define YOROOS_VERSION "0.3.0-dev1"
 
 #define LINE_MAX 128
 #define HISTORY_MAX 16
@@ -43,6 +44,7 @@ static void cmd_help(void) {
     vga_puts("  mem             memory size\n");
     vga_puts("  date            current date and time (RTC)\n");
     vga_puts("  color <0-15>    change text color\n");
+    vga_puts("  ls / write / cat / rm / fsinfo  RAM files (not persistent)\n");
     vga_puts("  reboot          restart the machine\n");
     vga_puts("  shutdown        power off\n");
     vga_puts("\nKeys: Up/Down = history, Ctrl+C = cancel line, Ctrl+L = clear\n");
@@ -231,6 +233,8 @@ static void execute(char *line) {
             arg++;
     }
 
+    if (yfs_command(line, arg, vga_puts)) return;
+
     if (strcmp(line, "help") == 0) {
         cmd_help();
     } else if (strcmp(line, "clear") == 0) {
@@ -264,6 +268,7 @@ static void execute(char *line) {
 }
 
 void shell_run(void) {
+    yfs_init();
     static char line[LINE_MAX];
     vga_puts("Type 'help' to see available commands.\n\n");
 

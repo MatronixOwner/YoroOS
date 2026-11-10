@@ -1,3 +1,4 @@
+#include "yorofs.h"
 /*
  * YoroOS UEFI application (BOOTX64.EFI).
  *
@@ -11,7 +12,7 @@
 
 #include <stdarg.h>
 
-#define YOROOS_VERSION "0.2.0"
+#define YOROOS_VERSION "0.3.0-dev1"
 
 static struct EFI_SYSTEM_TABLE *ST;
 static UINTN text_fg = EFI_LIGHTGRAY;
@@ -297,9 +298,9 @@ static void cmd_date(void) {
         print_w("Could not read the clock.\n");
 }
 
-static const char *color_names[16] = {
+static const char color_names[16][16] = {
     "black",       "blue",    "green",   "cyan",    "red",
-    "magenta",     "коричневые",   "light-grey", "dark-grey", "light-blue",
+    "magenta",     "brown",   "light-grey", "dark-grey", "light-blue",
     "light-green", "light-cyan", "light-red", "pink",    "yellow",
     "white",
 };
@@ -341,6 +342,8 @@ static bool execute(char *line) {
             arg++;
     }
 
+    if (yfs_command(line, arg, print_w)) return true;
+
     if (kstrcmp(line, "help") == 0) {
         print_w("Available commands:\n");
         print_w("  help            show this help\n");
@@ -353,6 +356,7 @@ static bool execute(char *line) {
         print_w("  mem             memory size\n");
         print_w("  date            current date and time\n");
         print_w("  color <0-15>    change text color\n");
+        print_w("  ls / write / cat / rm / fsinfo  RAM files (not persistent)\n");
         print_w("  reboot          restart the machine\n");
         print_w("  shutdown        power off\n");
         print_w("  exit            exit to the firmware boot menu\n");
@@ -483,6 +487,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
                            struct EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle;
     ST = SystemTable;
+    yfs_init();
 
     /* Do not let the firmware reboot us after 5 minutes of idling. */
     EFI_SET_WATCHDOG_TIMER wdt =

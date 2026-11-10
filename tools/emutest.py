@@ -283,6 +283,11 @@ def main():
         "echo hello-yoro-123",
         "unknowncmd",
         "help",
+        "write test.txt hello-yoro-fs",
+        "cat test.txt",
+        "ls",
+        "rm test.txt",
+        "cat test.txt",
         "shutdown",
     ]
 
@@ -299,7 +304,7 @@ def main():
           b"YoroOS Loader" in machine.bios_out and b"OK" in machine.bios_out)
     check("kernel banner on screen", "YoroOS version" in snap(0))
     check("shell prompt shown", "yoro@YoroOS:~$" in snap(0))
-    check("'version' output", "YoroOS 0.2" in snap(1))
+    check("'version' output", "YoroOS 0.3.0-dev1" in snap(1))
     check("'cpu' output", "CPU vendor:" in snap(2))
     check("'mem' output", "Memory:" in snap(3) and "MiB" in snap(3))
     check("'date' output (fake RTC = 31.10.2026 14:30)",
@@ -308,6 +313,11 @@ def main():
     check("unknown command handled", "Unknown command" in snap(6))
     check("'help' output",
           "Available commands" in snap(7) or "color <0-15>" in snap(7))
+    check("write file", "Written to RAM" in snap(8))
+    check("read file", "hello-yoro-fs" in snap(9))
+    check("list files", "test.txt" in snap(10))
+    check("delete file", "Deleted." in snap(11))
+    check("deleted file missing", "File not found." in snap(12))
     check("'shutdown' powered the machine off", machine.poweroff)
 
     print("\n--- screen right after boot ---")

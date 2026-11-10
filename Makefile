@@ -15,7 +15,7 @@ CFLAGS := -m32 -std=gnu11 -ffreestanding -fno-pie -fno-pic \
           -nostdlib -Wall -Wextra -O2 -Iinclude
 
 KERNEL_C := $(wildcard kernel/*.c)
-KERNEL_OBJ := $(patsubst kernel/%.c,$(BUILD)/%.o,$(KERNEL_C)) $(BUILD)/entry.o
+KERNEL_OBJ := $(patsubst kernel/%.c,$(BUILD)/%.o,$(KERNEL_C)) $(BUILD)/entry.o $(BUILD)/yorofs.o
 
 .PHONY: all iso clean run verify
 all: iso
@@ -33,6 +33,10 @@ $(BUILD)/boot.bin: $(BUILD)/boot.o
 	$(LD) -m elf_i386 -Ttext 0x7C00 --oformat binary -o $@ $<
 	truncate -s 2048 $@
 
+# ---- shared volatile filesystem prototype ----
+$(BUILD)/yorofs.o: common/yorofs.c include/yorofs.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # ---- kernel ----
 $(BUILD)/%.o: kernel/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -49,13 +53,16 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel.elf
 # ---- UEFI application (BOOTX64.EFI) for Hyper-V Gen2 / UEFI ----
 EFI_CFLAGS := -m64 -std=gnu11 -ffreestanding -fpic -fshort-wchar \
               -mno-red-zone -fno-stack-protector -nostdlib \
-              -Wall -Wextra -O2
+              -Wall -Wextra -O2 -Iinclude
 
 $(BUILD)/efi_main.o: efi/efi_main.c efi/efi.h | $(BUILD)
 	$(CC) $(EFI_CFLAGS) -c $< -o $@
 
-$(BUILD)/BOOTX64.so: $(BUILD)/efi_main.o efi/efi.lds
-	$(LD) -shared -Bsymbolic -nostdlib -znocombreloc -T efi/efi.lds -o $@ $<
+$(BUILD)/efi_yorofs.o: common/yorofs.c include/yorofs.h | $(BUILD)
+	$(CC) $(EFI_CFLAGS) -c $< -o $@
+
+$(BUILD)/BOOTX64.so: $(BUILD)/efi_main.o $(BUILD)/efi_yorofs.o efi/efi.lds
+	$(LD) -shared -Bsymbolic -nostdlib -znocombreloc -T efi/efi.lds -o $@ $(BUILD)/efi_main.o $(BUILD)/efi_yorofs.o
 
 $(BUILD)/BOOTX64.EFI: $(BUILD)/BOOTX64.so
 	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym \
@@ -78,3 +85,8 @@ verify: $(ISO)
 
 clean:
 	rm -rf $(BUILD)
+
+.PHONY: test
+test: | $(BUILD)
+	$(CC) -std=c11 -Wall -Wextra -Werror -iquote include common/yorofs.c tests/yorofs_test.c -o $(BUILD)/yorofs-test
+	$(BUILD)/yorofs-test
