@@ -13,11 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install QEMU, compiler and OVMF
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-multilib qemu-system-x86 ovmf
       - name: Build and test graphics
         run: |
           set -o pipefail
-          make test-graphics test 2>&1 | tee build-log.txt
+          make graphics-iso test-graphics test 2>&1 | tee build-log.txt
           python3 tools/verify_iso.py dist/yoroos-native-graphics-dev1.iso | tee -a build-log.txt
       - name: Boot UEFI and check kernel marker
         run: |
