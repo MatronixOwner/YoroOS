@@ -25,10 +25,12 @@ jobs:
           timeout 50s qemu-system-x86_64 -machine q35 -m 256 \
             -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd \
             -cdrom dist/yoroos-native-graphics-dev1.iso -boot d \
-            -display none -monitor none -serial file:build/serial.log -no-reboot
+            -display none -monitor none -serial file:build/serial.log -no-reboot >qemu-log.txt 2>&1
           code=$?
           set -e
           echo "QEMU exit status: $code"
+          echo "QEMU exit status: $code" >> qemu-log.txt
+          cat qemu-log.txt
           echo '--- Serial output ---'
           cat build/serial.log || true
           echo '---------------------'
@@ -39,6 +41,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           text="Native UEFI graphics test failed: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ -f qemu-log.txt ]; then
+            text="$text$(printf '\n\nQEMU output:\n')$(tail -c 3000 qemu-log.txt)"
+          fi
           if [ -f build-log.txt ]; then
             text="$text$(printf '\n\nBuild output:\n')$(tail -c 5000 build-log.txt)"
           fi
