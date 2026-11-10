@@ -12,14 +12,15 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - name: Install QEMU, compiler and OVMF
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-multilib qemu-system-x86 ovmf
       - name: Build and test graphics
         run: |
-          make graphics-iso test-graphics test
+          set -o pipefail
+          make graphics-iso test-graphics test 2>&1 | tee build-log.txt
           if readelf -r build/graphics.so | grep -q 'R_X86_64'; then
             echo 'Unexpected dynamic relocations in EFI image'; exit 1
           fi
-      - name: Install QEMU and OVMF
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf
       - name: Boot UEFI and check kernel marker
         run: |
           set +e
@@ -40,6 +41,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           text="Native UEFI graphics test failed: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ -f build-log.txt ]; then
+            text="$text$(printf '\n\nBuild output:\n')$(tail -c 5000 build-log.txt)"
+          fi
           if [ -f build/serial.log ]; then
             text="$text$(printf '\n\nSerial output:\n')$(tail -c 3000 build/serial.log)"
           fi
