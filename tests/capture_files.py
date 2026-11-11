@@ -1,4 +1,4 @@
-"""Produce an offscreen screenshot with representative, non-user data."""
+"""Produce an offscreen screenshot with representative, non-user data and themed icons."""
 import os
 import sys
 import tempfile

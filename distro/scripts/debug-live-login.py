@@ -74,6 +74,13 @@ else
     echo YORO_DESKTOP_NOT_RUNNING
 fi
 if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
+    echo PANEL_TEST_START
+    for i in $(seq 1 30); do
+        [ -f /home/yoro/.config/yoroos/panel-setup-done ] && break
+        sleep 2
+    done
+    ls -l /home/yoro/.config/yoroos/panel-setup-done 2>&1 || true
+    runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/lib/qt6/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var result=[]; var p=panels(); for (var i=0; i<p.length; ++i) { var w=p[i].widgets(); var names=[]; for(var j=0;j<w.length;++j) names.push(w[j].type); result.push(p[i].location+":"+names.join(",")); } print("YORO_PANELS="+result.join(";"));' 2>&1 || true
     echo BROWSER_TEST_START
     pshell=$(pgrep -u yoro -x plasmashell | head -n 1)
     display=$(tr '\0' '\n' < /proc/$pshell/environ | sed -n 's/^DISPLAY=//p' | head -n 1)
