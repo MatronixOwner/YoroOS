@@ -19,6 +19,7 @@ jobs:
           set -o pipefail
           make graphics-iso test-graphics test-cursor test 2>&1 | tee build-log.txt
           python3 tools/verify_iso.py dist/yoroos-native-graphics-dev1.iso | tee -a build-log.txt
+          objdump -d build/graphics.EFI > disasm.txt
       - name: Boot UEFI and check kernel marker
         run: |
           set +e
@@ -43,6 +44,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           text="Native UEFI graphics test failed: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ -f disasm.txt ]; then
+            text="$text$(printf '\n\nDisassembly near firmware fault:\n')$(grep -A 15 -B 15 1400016b disasm.txt | head -40)"
+          fi
           if [ -f qemu-log.txt ]; then
             text="$text$(printf '\n\nQEMU output:\n')$(tail -c 3000 qemu-log.txt)"
           fi
