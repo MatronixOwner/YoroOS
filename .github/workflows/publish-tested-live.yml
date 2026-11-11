@@ -16,9 +16,10 @@ jobs:
       BUILD_RUN: '43011702602'
       BUILD_SHA: 'efc817d2e6e3bd39d94a5fc95e2081b7f23afe69'
     steps:
+      - uses: actions/checkout@v4
       - name: Record previous publication error for diagnostics
         run: |
-          gh run view 43013598412 --log-failed | tail -60 > previous-release.log || true
+          gh run view 43013908797 --log-failed | tail -60 > previous-release.log || true
           { echo 'Previous publication error:'; echo '```'; cat previous-release.log; echo '```'; } > previous-release-comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -F body=@previous-release-comment.md || true
       - name: Confirm image build and UEFI smoke test succeeded
