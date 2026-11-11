@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Record previous publication error for diagnostics
         run: |
-          gh run view 43013908797 --log-failed | tail -60 > previous-release.log || true
+          gh run view 43014029342 --log-failed | tail -60 > previous-release.log || true
           { echo 'Previous publication error:'; echo '```'; cat previous-release.log; echo '```'; } > previous-release-comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -F body=@previous-release-comment.md || true
       - name: Confirm image build and UEFI smoke test succeeded
@@ -42,9 +42,8 @@ jobs:
           (cd out && sha256sum -c yoroos-desktop-amd64.iso.sha256)
           mv out/yoroos-desktop-amd64.iso out/yoroos-debian13-live-efc817d2e6e3-amd64.iso
           (cd out && sha256sum yoroos-debian13-live-efc817d2e6e3-amd64.iso > SHA256SUMS.txt)
-          gh release create desktop-debian13-live-efc817d2e6e3 out/yoroos-debian13-live-efc817d2e6e3-amd64.iso out/SHA256SUMS.txt \
-            --target "$BUILD_SHA" --prerelease --title 'YoroOS Debian 13 Live test efc817d2e6e3' \
-            --notes 'UEFI Live test image, no installer or persistence. In QEMU/OVMF it reached graphical.target; Plasma session and Hyper-V input are not verified. Test Hyper-V Gen2 with Secure Boot disabled initially. Linux and Debian 13 are the base; the experimental native kernel is separate. Includes Matronix Browser, Colloid icons and Bibata Modern Ice cursors.'
+          gh release upload desktop-debian13-live-efc817d2e6e3 out/yoroos-debian13-live-efc817d2e6e3-amd64.iso out/SHA256SUMS.txt
+
       - name: Report release errors
         if: failure()
         run: |
