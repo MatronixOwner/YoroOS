@@ -156,7 +156,9 @@ class Settings(QMainWindow):
 
 
 def main():
-    app = QApplication(sys.argv); app.setStyleSheet(style.get_stylesheet())
+    app = QApplication(sys.argv)
+    style.setup_app(app)
+    app.setStyleSheet(style.get_stylesheet())
     window = Settings(); window.show(); sys.exit(app.exec())
 
 

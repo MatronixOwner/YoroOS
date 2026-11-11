@@ -16,7 +16,8 @@ with tempfile.TemporaryDirectory() as td:
     for name in ('Работа', 'Проекты', 'Архив'): (root / name).mkdir()
     for name in ('Заметки.txt', 'Идеи.txt', 'Список.txt'): (root / name).write_text('Yoro')
     app = QApplication([])
-    QIcon.setThemeName('breeze')
+    style.setup_app(app)
+    QIcon.setThemeName('Colloid')
     app.setStyleSheet(style.get_stylesheet())
     window = Files(str(root)); window.show()
     def capture():

@@ -109,6 +109,7 @@ class Notepad(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Notepad()
     if len(sys.argv) > 1:

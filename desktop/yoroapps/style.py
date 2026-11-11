@@ -29,6 +29,22 @@ def save_accent(accent):
         json.dump({"accent": accent}, f)
 
 
+
+def setup_app(app):
+    """Make system icon themes discoverable even without a Qt platform theme."""
+    from PyQt6.QtGui import QIcon
+    paths = QIcon.themeSearchPaths()
+    for path in (os.path.expanduser('~/.local/share/icons'), '/usr/local/share/icons', '/usr/share/icons'):
+        if path not in paths:
+            paths.append(path)
+    QIcon.setThemeSearchPaths(paths)
+    if not QIcon.themeName():
+        if os.path.exists('/usr/share/icons/Colloid/index.theme'):
+            QIcon.setThemeName('Colloid')
+        elif os.path.exists('/usr/share/icons/breeze/index.theme'):
+            QIcon.setThemeName('breeze')
+
+
 def get_stylesheet(accent=None):
     accent = accent if isinstance(accent, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", accent) else load_accent()
     return f"""

@@ -323,6 +323,7 @@ class Files(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Files(sys.argv[1] if len(sys.argv) > 1 else None)
     window.show()

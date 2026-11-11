@@ -125,6 +125,7 @@ class MediaPlayer(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = MediaPlayer()
     window.show()

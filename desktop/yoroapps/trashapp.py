@@ -102,6 +102,7 @@ class Trash(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Trash()
     window.show()

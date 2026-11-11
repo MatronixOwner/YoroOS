@@ -15,12 +15,22 @@ from yoroapps.notepad import Notepad
 from yoroapps import calculator, computer, console, media, paint, settings, trashapp, style
 
 APP = QApplication.instance() or QApplication([])
+style.setup_app(APP)
 APP.setStyleSheet(style.get_stylesheet())
 
 class WidgetTest(unittest.TestCase):
     def test_svg_icon_theme_is_available(self):
-        QIcon.setThemeName('breeze')
-        self.assertFalse(QIcon.fromTheme('folder').pixmap(32, 32).isNull())
+        with tempfile.TemporaryDirectory() as td:
+            theme = Path(td) / 'test-icons'
+            icons = theme / 'scalable/places'; icons.mkdir(parents=True)
+            (theme / 'index.theme').write_text('[Icon Theme]\nName=test-icons\nDirectories=scalable/places\n[scalable/places]\nSize=32\nType=Scalable\n')
+            (icons / 'folder.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="blue"/></svg>')
+            oldpaths, oldtheme = QIcon.themeSearchPaths(), QIcon.themeName()
+            try:
+                QIcon.setThemeSearchPaths([td]); QIcon.setThemeName('test-icons')
+                self.assertFalse(QIcon.fromTheme('folder').pixmap(32, 32).isNull())
+            finally:
+                QIcon.setThemeSearchPaths(oldpaths); QIcon.setThemeName(oldtheme)
 
     def test_files_navigation_and_views(self):
         with tempfile.TemporaryDirectory() as td:
