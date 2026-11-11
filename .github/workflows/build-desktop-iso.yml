@@ -28,7 +28,14 @@ jobs:
           bash -n distro/build-iso.sh distro/scripts/qemu-live-smoke.sh
           python3 -m unittest discover -s tests -p 'test_desktop_branding.py' -v
           python3 -m unittest discover -s tests -p 'test_build_staging.py' -v
+          python3 -m unittest discover -s tests -p 'test_fileops.py' -v
           python3 -m py_compile desktop/yoroapps/*.py desktop/matronix-browser/matronix.py
+
+      - name: Test application windows with Qt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pyqt6 python3-pyqt6.qtmultimedia
+          QT_QPA_PLATFORM=offscreen /usr/bin/python3 -m unittest discover -s tests -p 'test_qt_ui.py' -v
 
       - name: Free disk space
         run: |
@@ -74,7 +81,7 @@ jobs:
         run: |
           set -o pipefail
           sudo xorriso -osirrox on -indev out/yoroos-desktop-amd64.iso -extract /live out/live
-          sudo python3 distro/scripts/debug-live-login.py out --expect-desktop 2>&1 | sudo tee out/login-debug.txt
+          sudo python3 distro/scripts/debug-live-login.py out --expect-desktop --expect-browser 2>&1 | sudo tee out/login-debug.txt
 
       - name: Post diagnostics (annotations + commit comment)
         if: always()

@@ -29,7 +29,7 @@ def _dirs():
 def _unique_name(files_dir, info_dir, name):
     candidate = name
     counter = 2
-    while (os.path.exists(os.path.join(files_dir, candidate)) or
+    while (os.path.lexists(os.path.join(files_dir, candidate)) or
            os.path.exists(os.path.join(info_dir, candidate + ".trashinfo"))):
         stem, ext = os.path.splitext(name)
         candidate = f"{stem} ({counter}){ext}"
@@ -49,7 +49,11 @@ def move_to_trash(path):
     with open(os.path.join(info_dir, name + ".trashinfo"), "w",
               encoding="utf-8") as f:
         f.write(info_text)
-    shutil.move(path, os.path.join(files_dir, name))
+    try:
+        shutil.move(path, os.path.join(files_dir, name))
+    except OSError:
+        os.remove(os.path.join(info_dir, name + ".trashinfo"))
+        raise
     return name
 
 

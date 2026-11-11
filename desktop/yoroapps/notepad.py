@@ -3,6 +3,7 @@
 import os
 import sys
 
+from PyQt6.QtCore import QIODevice, QSaveFile
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QMainWindow,
                              QMessageBox, QPlainTextEdit)
@@ -52,6 +53,7 @@ class Notepad(QMainWindow):
     def new_file(self):
         if self._maybe_save():
             self.editor.clear()
+            self.editor.document().setModified(False)
             self.path = None
             self.setWindowTitle("Yoro Блокнот")
 
@@ -64,9 +66,9 @@ class Notepad(QMainWindow):
 
     def load(self, path):
         try:
-            with open(path, encoding="utf-8", errors="replace") as f:
+            with open(path, encoding="utf-8-sig") as f:
                 self.editor.setPlainText(f.read())
-        except OSError as exc:
+        except (OSError, UnicodeError) as exc:
             QMessageBox.critical(self, "Ошибка", str(exc))
             return
         self.path = path
@@ -76,24 +78,27 @@ class Notepad(QMainWindow):
     def save_file(self):
         if self.path is None:
             return self.save_file_as()
-        try:
-            with open(self.path, "w", encoding="utf-8") as f:
-                f.write(self.editor.toPlainText())
-        except OSError as exc:
-            QMessageBox.critical(self, "Ошибка", str(exc))
-            return False
-        self.editor.document().setModified(False)
-        self.statusBar().showMessage(f"Сохранено: {self.path}")
-        return True
+        return self._save_to(self.path)
 
-    def save_file_as(self):
-        path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл")
-        if not path:
+    def _save_to(self, path):
+        # Commit the new file atomically; failed saves keep document state.
+        target = QSaveFile(path)
+        if not target.open(QIODevice.OpenModeFlag.WriteOnly):
+            QMessageBox.critical(self, "Ошибка сохранения", target.errorString())
+            return False
+        data = self.editor.toPlainText().encode("utf-8")
+        if target.write(data) != len(data) or not target.commit():
+            QMessageBox.critical(self, "Ошибка сохранения", target.errorString())
             return False
         self.path = path
         self.editor.document().setModified(False)
         self.setWindowTitle(f"Yoro Блокнот — {os.path.basename(path)}")
-        return self.save_file()
+        self.statusBar().showMessage(f"Сохранено: {path}")
+        return True
+
+    def save_file_as(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл")
+        return self._save_to(path) if path else False
 
     def closeEvent(self, event):
         if self._maybe_save():

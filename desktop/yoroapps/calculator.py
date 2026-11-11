@@ -27,7 +27,7 @@ class Calculator(QMainWindow):
 
         self.history = QLabel("")
         self.history.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.history.setStyleSheet("color: #9aa3b2; font-size: 11pt;")
+        self.history.setStyleSheet("color: #7a8595; font-size: 11pt;")
 
         self.display = QLabel("0")
         self.display.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -46,7 +46,7 @@ class Calculator(QMainWindow):
                 elif label in "÷×−+%":
                     btn.setStyleSheet(
                         "font-size: 15pt; border-radius: 12px;"
-                        "background: #333947;")
+                        "background: #e7edf7; color: #26354a;")
                 btn.clicked.connect(lambda _=False, t=label: self._press(t))
                 grid.addWidget(btn, r, c)
 

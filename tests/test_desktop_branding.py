@@ -42,7 +42,7 @@ class PanelTest(unittest.TestCase):
     def test_retries_until_plasma_ready(self):
         with tempfile.TemporaryDirectory() as td, \
              patch.object(panel, '_marker_path', return_value=str(Path(td) / 'sub' / 'marker')), \
-             patch.object(panel, 'apply_panel_preset', side_effect=[False, False, True]) as apply, \
+             patch.object(panel, 'apply_desktop_layout', side_effect=[False, False, True]) as apply, \
              patch.object(panel, 'set_wallpaper', return_value=True), \
              patch.object(panel.time, 'sleep'):
             panel.main()
@@ -52,7 +52,7 @@ class PanelTest(unittest.TestCase):
     def test_no_marker_if_plasma_unavailable(self):
         with tempfile.TemporaryDirectory() as td, \
              patch.object(panel, '_marker_path', return_value=str(Path(td) / 'marker')), \
-             patch.object(panel, 'apply_panel_preset', return_value=False), \
+             patch.object(panel, 'apply_desktop_layout', return_value=False), \
              patch.object(panel, 'set_wallpaper', return_value=False), \
              patch.object(panel.time, 'sleep'):
             panel.main()

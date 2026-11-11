@@ -11,6 +11,7 @@ from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
 expect_desktop = '--expect-desktop' in sys.argv[2:]
+expect_browser = '--expect-browser' in sys.argv[2:]
 iso = root / 'yoroos-desktop-amd64.iso'
 kernels = list((root / 'live').glob('vmlinuz-*'))
 initrds = list((root / 'live').glob('initrd.img-*'))
@@ -19,7 +20,7 @@ if len(kernels) != 1 or len(initrds) != 1:
 serial_log = root / 'serial.log'
 debug_sock = root / 'debug.sock'
 qemu = subprocess.Popen([
-    'qemu-system-x86_64', '-machine', 'q35', '-accel', 'tcg', '-m', '3072', '-smp', '2',
+    'qemu-system-x86_64', '-machine', 'q35', '-accel', 'tcg', '-m', '4096', '-smp', '2',
     '-kernel', str(kernels[0]), '-initrd', str(initrds[0]),
     '-append', 'boot=live components username=yoro hostname=yoroos console=tty0 console=ttyS0,115200n8 systemd.debug_shell=ttyS1',
     '-cdrom', str(iso), '-boot', 'd', '-display', 'none', '-monitor', 'none',
@@ -72,13 +73,33 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
 else
     echo YORO_DESKTOP_NOT_RUNNING
 fi
+if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
+    echo BROWSER_TEST_START
+    pshell=$(pgrep -u yoro -x plasmashell | head -n 1)
+    display=$(tr '\0' '\n' < /proc/$pshell/environ | sed -n 's/^DISPLAY=//p' | head -n 1)
+    xauth=$(tr '\0' '\n' < /proc/$pshell/environ | sed -n 's/^XAUTHORITY=//p' | head -n 1)
+    display=${display:-:0}
+    xauth=${xauth:-/home/yoro/.Xauthority}
+    echo "DISPLAY=$display XAUTHORITY=$xauth"
+    printf %s '__MATRONIX_TEST__' | base64 -d > /tmp/yoro-matronix-smoke.py
+    chmod 644 /tmp/yoro-matronix-smoke.py
+    if timeout 110 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/python3 /tmp/yoro-matronix-smoke.py >/tmp/matronix-test.log 2>&1; then
+        cat /tmp/matronix-test.log
+        echo YORO_BROWSER_OK
+    else
+        cat /tmp/matronix-test.log
+        echo YORO_BROWSER_FAILED
+    fi
+fi
 echo YORO_DIAGNOSTIC_END
 """
+    smoke = Path(__file__).with_name('matronix-smoke.py').read_bytes()
+    cmd = cmd.replace('__MATRONIX_TEST__', base64.b64encode(smoke).decode())
     # Base64 prevents the echoed input line from resembling output markers.
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
-    until = time.monotonic() + 240
+    until = time.monotonic() + 390
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
         if readable:
@@ -96,6 +117,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The live user or Plasma desktop did not start')
     if expect_desktop and b'\r\nYORO_LIVE_PASSWORD_VALID\r\n' not in data:
         raise RuntimeError('The expected Live fallback password is not valid')
+    if expect_browser and b'\r\nYORO_BROWSER_OK\r\n' not in data:
+        raise RuntimeError('Matronix did not start and render the test page')
 
 finally:
     qemu.terminate()

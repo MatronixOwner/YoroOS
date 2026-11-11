@@ -63,9 +63,12 @@ def apply_panel_preset(location="bottom", height=46):
 var ps = panels();
 for (var i = 0; i < ps.length; i++) {{
     var p = ps[i];
-    p.location = "{location}";
-    p.height = {int(height)};
     var ws = p.widgets();
+    var isDock = false;
+    for (var k = 0; k < ws.length; k++) {{
+        if (ws[k].type == "org.kde.plasma.icontasks" || ws[k].type == "org.kde.plasma.taskmanager") isDock = true;
+    }}
+    if (isDock) {{ p.location = "{location}"; p.height = {int(height)}; }}
     for (var j = 0; j < ws.length; j++) {{
         var w = ws[j];
         if (w.type == "org.kde.plasma.kickoff" ||
@@ -85,6 +88,41 @@ for (var i = 0; i < ps.length; i++) {{
 """
     return run_plasma_script(script)
 
+
+
+def apply_desktop_layout():
+    """On first Live login create a top system bar and centered launcher dock.
+
+    This is run only once per user. Settings can still adjust panel placement.
+    """
+    script = f"""
+var current = panels();
+if (current.length === 0) {{ throw new Error("No Plasma panel is available"); }}
+var dock = current[0];
+dock.location = "bottom";
+dock.alignment = "center";
+dock.height = 64;
+dock.minimumLength = 550;
+dock.maximumLength = 850;
+var oldWidgets = dock.widgets();
+for (var i = 0; i < oldWidgets.length; i++) {{ oldWidgets[i].remove(); }}
+var tasks = dock.addWidget("org.kde.plasma.icontasks");
+tasks.currentConfigGroup = ["General"];
+tasks.writeConfig("launchers", {_launchers_js()});
+tasks.reloadConfig();
+var top = new Panel;
+top.location = "top";
+top.height = 32;
+var menu = top.addWidget("org.kde.plasma.kickoff");
+menu.currentConfigGroup = ["General"];
+menu.writeConfig("icon", "yoro-logo");
+menu.reloadConfig();
+top.addWidget("org.kde.plasma.appmenu");
+top.addWidget("org.kde.plasma.panelspacer");
+top.addWidget("org.kde.plasma.systemtray");
+top.addWidget("org.kde.plasma.digitalclock");
+"""
+    return run_plasma_script(script)
 
 def set_wallpaper(path):
     tool = shutil.which("plasma-apply-wallpaperimage")
@@ -110,7 +148,7 @@ def main():
     ok = False
     # Plasma may not have acquired its D-Bus name at the autostart phase.
     for attempt in range(30):
-        if apply_panel_preset():
+        if apply_desktop_layout():
             ok = True
             break
         if attempt < 29:

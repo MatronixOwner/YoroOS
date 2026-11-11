@@ -2,10 +2,10 @@
 
 import sys
 
-from PyQt6.QtCore import QPoint, Qt
+from PyQt6.QtCore import QPoint, Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QImage, QPainter, QPen
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
-                             QMainWindow, QMessageBox, QPushButton, QSlider,
+                             QMainWindow, QMessageBox, QPushButton, QScrollArea, QSlider,
                              QVBoxLayout, QWidget)
 
 from yoroapps import style
@@ -15,6 +15,8 @@ COLORS = ["#111111", "#e05252", "#e67e22", "#f2c531", "#2ecc71",
 
 
 class Canvas(QWidget):
+    changed = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.image = QImage(1200, 800, QImage.Format.Format_RGB32)
@@ -23,7 +25,7 @@ class Canvas(QWidget):
         self.pen_width = 4
         self.eraser = False
         self.last = None
-        self.setMinimumSize(480, 320)
+        self.setFixedSize(1200, 800)
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
@@ -56,10 +58,12 @@ class Canvas(QWidget):
             else:
                 painter.drawPoint(point)
         self.update()
+        self.changed.emit()
 
     def clear(self):
         self.image.fill(QColor("white"))
         self.update()
+        self.changed.emit()
 
     def load(self, path):
         loaded = QImage(path)
@@ -80,11 +84,13 @@ class Paint(QMainWindow):
         self.setWindowTitle("Yoro Paint")
         self.resize(980, 640)
         self.canvas = Canvas()
+        self.dirty = False
+        self.canvas.changed.connect(self._mark_dirty)
 
         toolbar = self.addToolBar("Файл")
         for text, slot in (("Открыть…", self.open_image),
                            ("Сохранить PNG…", self.save_image),
-                           ("Очистить", self.canvas.clear)):
+                           ("Очистить", self.clear_canvas)):
             action = QAction(text, self)
             action.triggered.connect(slot)
             toolbar.addAction(action)
@@ -119,11 +125,35 @@ class Paint(QMainWindow):
 
         layout = QVBoxLayout()
         layout.addLayout(palette)
-        layout.addWidget(self.canvas, 1)
+        scroll = QScrollArea()
+        scroll.setWidget(self.canvas)
+        scroll.setWidgetResizable(False)
+        layout.addWidget(scroll, 1)
         central = QWidget()
         central.setLayout(layout)
         self.setCentralWidget(central)
         self.statusBar().showMessage("Рисуйте мышью по полотну")
+
+    def _mark_dirty(self):
+        self.dirty = True
+        self.setWindowTitle("Yoro Paint •")
+
+    def _maybe_save(self):
+        if not self.dirty:
+            return True
+        answer = QMessageBox.question(self, "Yoro Paint", "Сохранить изменения?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+        if answer == QMessageBox.StandardButton.Save:
+            return self.save_image()
+        return answer == QMessageBox.StandardButton.Discard
+
+    def clear_canvas(self):
+        if self._maybe_save():
+            self.canvas.clear()
+
+    def closeEvent(self, event):
+        if self._maybe_save(): event.accept()
+        else: event.ignore()
 
     def _set_color(self, hex_color):
         self.canvas.pen_color = QColor(hex_color)
@@ -131,11 +161,17 @@ class Paint(QMainWindow):
         self.eraser_btn.setChecked(False)
 
     def open_image(self):
+        if not self._maybe_save():
+            return
         path, _ = QFileDialog.getOpenFileName(
             self, "Открыть изображение", "",
             "Картинки (*.png *.jpg *.jpeg *.bmp)")
-        if path and not self.canvas.load(path):
-            QMessageBox.critical(self, "Yoro Paint", "Не удалось открыть файл")
+        if path:
+            if not self.canvas.load(path):
+                QMessageBox.critical(self, "Yoro Paint", "Не удалось открыть файл")
+            else:
+                self.dirty = False
+                self.setWindowTitle("Yoro Paint")
 
     def save_image(self):
         path, _ = QFileDialog.getSaveFileName(
@@ -143,8 +179,14 @@ class Paint(QMainWindow):
         if path:
             if not path.lower().endswith(".png"):
                 path += ".png"
-            self.canvas.image.save(path, "PNG")
+            if not self.canvas.image.save(path, "PNG"):
+                QMessageBox.critical(self, "Yoro Paint", "Не удалось сохранить файл")
+                return False
+            self.dirty = False
+            self.setWindowTitle("Yoro Paint")
             self.statusBar().showMessage(f"Сохранено: {path}")
+            return True
+        return False
 
 
 def main():

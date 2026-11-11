@@ -1,9 +1,9 @@
-"""Shared look & feel for all YoroOS desktop applications."""
-
+"""A calm, light visual language shared by Yoro's Qt applications."""
 import json
 import os
+import re
 
-DEFAULT_ACCENT = "#3daee9"  # KDE Breeze blue
+DEFAULT_ACCENT = "#3478f6"
 
 
 def config_path():
@@ -14,12 +14,15 @@ def config_path():
 def load_accent():
     try:
         with open(config_path(), encoding="utf-8") as f:
-            return json.load(f).get("accent", DEFAULT_ACCENT)
-    except (OSError, ValueError):
+            value = json.load(f).get("accent", DEFAULT_ACCENT)
+            return value if isinstance(value, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", value) else DEFAULT_ACCENT
+    except (OSError, ValueError, AttributeError):
         return DEFAULT_ACCENT
 
 
 def save_accent(accent):
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", accent):
+        raise ValueError("Invalid accent color")
     path = config_path()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -27,64 +30,39 @@ def save_accent(accent):
 
 
 def get_stylesheet(accent=None):
-    accent = accent or load_accent()
+    accent = accent if isinstance(accent, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", accent) else load_accent()
     return f"""
-* {{
-    font-family: "Noto Sans", "Segoe UI", sans-serif;
-    font-size: 10.5pt;
-}}
-QMainWindow, QWidget {{
-    background: #1b1e24;
-    color: #e8eaed;
-}}
-QPushButton {{
-    background: #2a2e37;
-    border: 1px solid #3a3f4b;
-    border-radius: 8px;
-    padding: 6px 14px;
-}}
-QPushButton:hover {{ background: #333947; border-color: {accent}; }}
-QPushButton:pressed {{ background: {accent}; color: #10131a; }}
-QPushButton#accent {{
-    background: {accent};
-    color: #10131a;
-    border: none;
-    font-weight: bold;
-}}
+* {{ font-family: "Noto Sans", sans-serif; font-size: 10pt; color: #222733; }}
+QMainWindow, QWidget {{ background-color: #f8f9fb; }}
+QWidget#sidebar {{ background-color: #edf0f5; border-right: 1px solid #d9dee8; }}
+QWidget#toolbar {{ background-color: #f5f6f9; border-bottom: 1px solid #e0e4eb; }}
+QLabel {{ background: transparent; }}
+QLabel#title {{ font-size: 17pt; font-weight: 700; color: #222733; }}
+QLabel#subtitle, QLabel#section {{ color: #747d8e; }}
+QLabel#section {{ font-size: 9pt; font-weight: 700; }}
+QPushButton, QToolButton {{ background: #ffffff; border: 1px solid #d8dde7;
+    border-radius: 7px; padding: 6px 11px; }}
+QPushButton:hover, QToolButton:hover {{ background: #eef2f8; border-color: #c3ccda; }}
+QPushButton:pressed, QToolButton:pressed, QToolButton:checked {{ background: #dce6f8; }}
+QPushButton:disabled, QToolButton:disabled {{ color: #adb4bf; background: #f1f2f4; }}
+QPushButton#accent {{ background: {accent}; color: white; border: none; font-weight: 600; }}
 QLineEdit, QPlainTextEdit, QTextEdit, QTreeView, QListWidget, QListView {{
-    background: #12151b;
-    border: 1px solid #2e333f;
-    border-radius: 8px;
-    selection-background-color: {accent};
-    selection-color: #10131a;
-}}
-QTreeView::item:selected, QListWidget::item:selected {{
-    background: {accent};
-    color: #10131a;
-}}
-QHeaderView::section {{
-    background: #232733;
-    border: none;
-    padding: 4px;
-}}
-QToolBar {{
-    background: #20242e;
-    border-bottom: 1px solid #2e333f;
-    spacing: 4px;
-    padding: 4px;
-}}
-QStatusBar {{ background: #20242e; color: #9aa3b2; }}
-QLabel#title {{ font-size: 16pt; font-weight: bold; color: {accent}; }}
-QLabel#subtitle {{ color: #9aa3b2; }}
-QSlider::groove:horizontal {{
-    height: 6px; background: #2e333f; border-radius: 3px;
-}}
-QSlider::handle:horizontal {{
-    width: 16px; margin: -5px 0; border-radius: 8px; background: {accent};
-}}
-QProgressBar {{
-    background: #12151b; border: 1px solid #2e333f; border-radius: 6px;
-    text-align: center; height: 14px;
-}}
+    background: white; border: 1px solid #dce1e8; border-radius: 7px;
+    selection-background-color: {accent}; selection-color: white; }}
+QLineEdit {{ padding: 6px 9px; }}
+QPlainTextEdit, QTextEdit {{ padding: 8px; }}
+QTreeView::item, QListWidget::item, QListView::item {{ padding: 5px; }}
+QTreeView::item:selected, QListWidget::item:selected, QListView::item:selected {{ background: {accent}; color: white; }}
+QListWidget#places {{ background: transparent; border: none; outline: none; }}
+QListWidget#places::item {{ margin: 1px 5px; padding: 7px; border-radius: 6px; }}
+QListWidget#places::item:selected {{ background: #dce6f8; color: #273449; }}
+QHeaderView::section {{ background: #f8f9fb; border: none; border-bottom: 1px solid #e5e8ed; padding: 7px; color: #687385; }}
+QToolBar {{ background: #f5f6f9; border: none; border-bottom: 1px solid #e0e4eb; spacing: 5px; padding: 7px; }}
+QStatusBar {{ background: #f8f9fb; color: #747d8e; }}
+QMenuBar, QMenu {{ background: #f8f9fb; }}
+QMenu::item:selected {{ background: {accent}; color: white; }}
+QSlider::groove:horizontal {{ height: 5px; background: #d9dfe8; border-radius: 2px; }}
+QSlider::handle:horizontal {{ width: 15px; margin: -5px 0; border-radius: 7px; background: {accent}; }}
+QProgressBar {{ background: #e5eaf1; border: none; border-radius: 5px; text-align: center; height: 12px; }}
 QProgressBar::chunk {{ background: {accent}; border-radius: 5px; }}
 """

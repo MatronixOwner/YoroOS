@@ -82,7 +82,8 @@ python3-pyside6.qtgui
 python3-pyside6.qtwidgets
 python3-pyside6.qtsvg
 python3-pyside6.qtwebchannel
-python3-pyside6.qtwebengine
+python3-pyside6.qtwebenginecore
+python3-pyside6.qtwebenginewidgets
 python3-cryptography
 # System basics
 network-manager
@@ -176,7 +177,8 @@ Bibata Modern Ice: https://github.com/ful1e5/Bibata_Cursor
 release v2.0.7 (GPL-3.0)
 EOTHEME
     mkdir -p "$INC/etc/skel/.config" "$INC/usr/share/icons/default"
-    printf '[Icons]\nTheme=Colloid\n' > "$INC/etc/skel/.config/kdeglobals"
+    printf '[General]\nColorScheme=BreezeLight\n[Icons]\nTheme=Colloid\n' > "$INC/etc/skel/.config/kdeglobals"
+    printf '[Theme]\nname=breeze-light\n' > "$INC/etc/skel/.config/plasmarc"
     printf '[Mouse]\ncursorTheme=Bibata-Modern-Ice\ncursorSize=24\n' > "$INC/etc/skel/.config/kcminputrc"
     printf '[Icon Theme]\nInherits=Bibata-Modern-Ice\n' > "$INC/usr/share/icons/default/index.theme"
 fi
@@ -212,6 +214,9 @@ mkdir -p config/hooks/normal
 cat > config/hooks/normal/9100-yoro.hook.chroot <<'EOF'
 #!/bin/sh
 set -e
+# Verify imports in the actual Debian image; Qt WebEngine bindings are split
+# across packages and APT recommends are disabled.
+python3 -c 'from PySide6.QtSvg import QSvgRenderer; from PySide6.QtWebChannel import QWebChannel; from PySide6.QtWebEngineCore import QWebEnginePage; from PySide6.QtWebEngineWidgets import QWebEngineView'
 update-desktop-database /usr/share/applications || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
 # Hide launchers for dependency-provided tools without removing components

@@ -104,7 +104,7 @@ class Console(QMainWindow):
             self._prompt()
             return
         if cmd == "yoro":
-            self._print("YoroOS Desktop (Linux + YoroOS Core)")
+            self._print("YoroOS Desktop (Debian + Linux)")
             self._print(f"Ядро Linux: {platform.release()} "
                         f"({platform.machine()})")
             self._prompt()
@@ -112,7 +112,7 @@ class Console(QMainWindow):
         if cmd == "yoro-apps":
             self._print("yoro-notepad, yoro-files, yoro-media, yoro-settings,"
                         " yoro-console, yoro-computer, yoro-trash,"
-                        " yoro-browser")
+                        " matronix-browser")
             self._prompt()
             return
 
