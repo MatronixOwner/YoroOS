@@ -1,4 +1,4 @@
-name: Diagnose live desktop options
+name: Diagnose Matronix tab bar
 on:
   push:
     branches: ['arena/935b4efd-yoroos']

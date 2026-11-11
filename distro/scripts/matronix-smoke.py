@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """CI-only: run the actual Matronix 1.0.0 window and render local HTML."""
+import os
 import sys
 import faulthandler
 faulthandler.enable()
@@ -8,6 +9,11 @@ sys.path.insert(0, '/usr/share/matronix-browser')
 from PySide6.QtCore import QTimer, QUrl
 from PySide6.QtWidgets import QApplication
 import matronix
+if os.environ.get('YORO_TEST_TAB_FIX'):
+    from PySide6.QtCore import QSize
+    def safe_tab_size(self, index):
+        return QSize(matronix.PINNED_WIDTH if self.tabData(index) else 180, 36)
+    matronix.TabBar.tabSizeHint = safe_tab_size
 
 print("SMOKE_QAPPLICATION", flush=True)
 app = QApplication(sys.argv)
