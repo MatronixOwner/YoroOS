@@ -2,9 +2,11 @@ Matronix Browser — vendored snapshot for YoroOS Desktop.
 Upstream: https://github.com/MatronixOwner/Matronix_Browser
 Tag:      v1.0.0
 Commit:   b4a94cb68139b205fbe936508d609766dc8b2048
-SHA256 matronix.py: ae1186292b8aa1f677318c78c47432c7c4a3e883f78b2aa04b9b9be548b38d3f
+Upstream SHA256 matronix.py: ae1186292b8aa1f677318c78c47432c7c4a3e883f78b2aa04b9b9be548b38d3f
 Imported: 2026-11-03 (files: matronix.py, assets/logo.svg, assets/logo.png,
           requirements.txt, README.md -> README.upstream.md)
 Runtime on YoroOS: Python 3 + PySide6 (Debian packages python3-pyside6.*)
                    + python3-cryptography.
 Update: copy a newer matronix.py (+assets) from upstream over these files.
+
+YoroOS patch: TabBar.tabSizeHint avoids a Qt/PySide 6.8 native crash during layout.

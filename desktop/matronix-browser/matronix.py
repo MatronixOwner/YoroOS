@@ -944,11 +944,15 @@ class TabBar(QTabBar):
     TAB_MIN, TAB_MAX = 120, 220
 
     def tabSizeHint(self, index):  # noqa: N802 (имя из Qt API)
-        base = super().tabSizeHint(index)
+        # Qt/PySide 6.8 on Debian can re-enter QTabBar layout while the base
+        # implementation builds its style option, causing a native crash.
+        # Derive a stable hint without invoking the base virtual method.
+        height = max(32, self.fontMetrics().height() + 16)
         if self.tabData(index):
-            return QSize(PINNED_WIDTH, base.height())
-        width = max(self.TAB_MIN, min(self.TAB_MAX, base.width()))
-        return QSize(width, base.height())
+            return QSize(PINNED_WIDTH, height)
+        width = max(self.TAB_MIN, min(self.TAB_MAX,
+                    self.fontMetrics().horizontalAdvance(self.tabText(index)) + 64))
+        return QSize(width, height)
 
 
 # ---------------------------------------------------------------------------
