@@ -36,11 +36,21 @@ jobs:
                       /opt/hostedtoolcache/CodeQL || true
           df -h
 
+      - name: Fetch selected icon and cursor themes
+        run: |
+          set -euxo pipefail
+          mkdir -p .themes/colloid
+          curl -fL --retry 3 https://codeload.github.com/vinceliuice/Colloid-icon-theme/tar.gz/ceac6608ecd0e40025cbc2ebbd32bf0e0f4ebc6a | tar xz --strip-components=1 -C .themes/colloid
+          curl -fL --retry 3 -o .themes/bibata.tar.xz https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz
+          tar xJf .themes/bibata.tar.xz -C .themes
+          test -f .themes/Bibata-Modern-Ice/index.theme
+          curl -fL --retry 3 https://raw.githubusercontent.com/ful1e5/Bibata_Cursor/ddb09273cde49faeb6a32282660ff4293f52d6e0/LICENSE -o .themes/bibata-license.txt
+
       - name: Build ISO in Debian (trixie) container
         run: |
           set -o pipefail
           docker run --privileged --rm \
-            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            -v "$GITHUB_WORKSPACE:/work" -w /work -e YORO_THEME_INPUT_DIR=/work/.themes \
             debian:trixie bash -euxc '
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -87,3 +97,16 @@ jobs:
             out/yoroos-desktop-amd64.iso.sha256
             out/uefi-serial.log
           if-no-files-found: error
+
+      - name: Publish tested Live ISO as a pre-release
+        if: success() && github.ref == 'refs/heads/arena/935b4efd-yoroos'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          tag="desktop-debian13-live-${GITHUB_SHA:0:12}"
+          mv out/yoroos-desktop-amd64.iso "out/yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso"
+          (cd out && sha256sum "yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso" > SHA256SUMS.txt)
+          gh release create "$tag" "out/yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso" out/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" --prerelease --title "YoroOS Debian 13 Live test ${GITHUB_SHA:0:12}" \
+            --notes 'UEFI Live test image, no installer or persistence. Automatic QEMU UEFI smoke test checks boot to the graphical target, not the desktop or Hyper-V input. Hyper-V Gen2 mouse, keyboard, Plasma and browser still require user testing. Secure Boot is unverified; disable it for the first test. Built on Debian 13 and Linux; the native experimental kernel is separate.'

@@ -18,8 +18,9 @@ YoroOS Desktop строится на **Debian 13, ядре Linux и KDE Plasma**
   Поддержка запуска приложений Windows в этой сборке не заявляется.
 * Графический запуск и оборудование Hyper-V проверяются пользователем в ВМ.
   Успешная сборка и проверка в QEMU не подтверждают работу Hyper-V.
-* Свои иконки Yoro и обои. Выбранные иконки Colloid и курсор Bibata ещё не
-  добавлены в Linux-образ — это следующий этап с проверкой лицензий.
+* Свои значки приложений и обои. CI-образ включает выбранные иконки Colloid и
+  курсор Bibata Modern Ice (GPL-3.0); при локальной сборке без переменной
+  `YORO_THEME_INPUT_DIR` используются стандартные иконки и курсор.
 * Необязательные nano, htop, git, curl не запрашиваются явно. Системные
   приложения, попавшие как зависимости, скрываются в меню через XDG-override,
   а не удаляются; их наличие и видимость в других местах не исключены.
@@ -41,6 +42,7 @@ python3 -m unittest discover -s tests -p 'test_desktop_branding.py'
 python3 -m unittest discover -s tests -p 'test_build_staging.py'
 ```
 
-Или workflow `Build YoroOS Desktop ISO (Linux)` на GitHub. `out/` содержит ISO
+Для полного оформления используются исходники тем в `YORO_THEME_INPUT_DIR`;
+их подготовку демонстрирует workflow `Build YoroOS Desktop ISO (Linux)` на GitHub. `out/` содержит ISO
 и его SHA-256. При первой загрузке проверяйте видимый рабочий стол, мышь,
 клавиатуру, панель и запуск Matronix Browser; при проблеме пришлите скриншот.

@@ -156,6 +156,27 @@ hyperv_fb
 EOHV
 cp "$REPO_ROOT/distro/scripts/hide-foreign-menu-items.py" "$INC/usr/lib/yoroos/"
 
+# Optional licensed themes supplied by the CI fetch step (also usable locally).
+# Keep upstream licensing inside the image. Without them, Plasma uses Breeze.
+if [ -n "${YORO_THEME_INPUT_DIR:-}" ]; then
+    THEME_INPUT=$(CDPATH= cd -- "$YORO_THEME_INPUT_DIR" && pwd)
+    mkdir -p "$INC/usr/share/icons" "$INC/usr/share/doc/yoroos/themes"
+    bash "$THEME_INPUT/colloid/install.sh" --dest "$PWD/$INC/usr/share/icons" --theme default
+    cp -a "$THEME_INPUT/Bibata-Modern-Ice" "$INC/usr/share/icons/"
+    cp "$THEME_INPUT/colloid/LICENSE" "$INC/usr/share/doc/yoroos/themes/colloid-license.txt"
+    cp "$THEME_INPUT/bibata-license.txt" "$INC/usr/share/doc/yoroos/themes/bibata-license.txt"
+    cat > "$INC/usr/share/doc/yoroos/themes/SOURCES.txt" <<'EOTHEME'
+Colloid: https://github.com/vinceliuice/Colloid-icon-theme
+commit ceac6608ecd0e40025cbc2ebbd32bf0e0f4ebc6a (GPL-3.0)
+Bibata Modern Ice: https://github.com/ful1e5/Bibata_Cursor
+release v2.0.7 (GPL-3.0)
+EOTHEME
+    mkdir -p "$INC/etc/skel/.config" "$INC/usr/share/icons/default"
+    printf '[Icons]\nTheme=Colloid\n' > "$INC/etc/skel/.config/kdeglobals"
+    printf '[Mouse]\ncursorTheme=Bibata-Modern-Ice\ncursorSize=24\n' > "$INC/etc/skel/.config/kcminputrc"
+    printf '[Icon Theme]\nInherits=Bibata-Modern-Ice\n' > "$INC/usr/share/icons/default/index.theme"
+fi
+
 # Desktop shortcuts for the live user.
 mkdir -p "$INC/etc/skel/Desktop"
 cp "$REPO_ROOT/desktop/applications/yoro-computer.desktop" "$INC/etc/skel/Desktop/"
