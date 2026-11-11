@@ -98,6 +98,9 @@ def apply_desktop_layout():
     script = f"""
 var current = panels();
 if (current.length === 0) {{ throw new Error("No Plasma panel is available"); }}
+// A delayed first call may finish after qdbus times out. Retrying must not
+// accumulate extra top bars.
+for (var n = current.length - 1; n > 0; n--) {{ current[n].remove(); }}
 var dock = current[0];
 dock.location = "bottom";
 dock.alignment = "center";

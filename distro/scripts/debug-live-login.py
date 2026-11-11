@@ -93,13 +93,22 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     echo "DISPLAY=$display XAUTHORITY=$xauth"
     printf %s '__MATRONIX_TEST__' | base64 -d > /tmp/yoro-matronix-smoke.py
     chmod 644 /tmp/yoro-matronix-smoke.py
-    if timeout 110 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-matronix-smoke.py >/tmp/matronix-test.log 2>&1; then
-        cat /tmp/matronix-test.log
-        echo YORO_BROWSER_OK
-    else
-        cat /tmp/matronix-test.log
-        echo YORO_BROWSER_FAILED
-    fi
+    for mode in default generic software; do
+        echo "MATRONIX_MODE=$mode"
+        case "$mode" in
+          default) option='' ;;
+          generic) option='QT_QPA_PLATFORMTHEME=generic' ;;
+          software) option='LIBGL_ALWAYS_SOFTWARE=1' ;;
+        esac
+        if timeout 110 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 ${option:+$option} /usr/bin/python3 /tmp/yoro-matronix-smoke.py >/tmp/matronix-test.log 2>&1; then
+            cat /tmp/matronix-test.log
+            echo "YORO_BROWSER_OK_$mode"
+        else
+            cat /tmp/matronix-test.log
+            echo "YORO_BROWSER_FAILED_$mode"
+        fi
+    done
+
 fi
 echo YORO_DIAGNOSTIC_END
 """
@@ -109,7 +118,7 @@ echo YORO_DIAGNOSTIC_END
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
-    until = time.monotonic() + 390
+    until = time.monotonic() + 650
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
         if readable:
@@ -127,7 +136,7 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The live user or Plasma desktop did not start')
     if expect_desktop and b'\r\nYORO_LIVE_PASSWORD_VALID\r\n' not in data:
         raise RuntimeError('The expected Live fallback password is not valid')
-    if expect_browser and b'\r\nYORO_BROWSER_OK\r\n' not in data:
+    if expect_browser and b'\r\nYORO_BROWSER_OK_default\r\n' not in data:
         raise RuntimeError('Matronix did not start and render the test page')
 
 finally:

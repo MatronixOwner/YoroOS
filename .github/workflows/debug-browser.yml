@@ -1,4 +1,4 @@
-name: Diagnose live desktop
+name: Diagnose live desktop options
 on:
   push:
     branches: ['arena/935b4efd-yoroos']
