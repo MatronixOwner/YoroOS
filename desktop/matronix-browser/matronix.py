@@ -1810,6 +1810,8 @@ class MainWindow(QMainWindow):
     # ----- вкладки --------------------------------------------------------
     def _attach_close_button(self, index: int, view):
         btn = QToolButton()
+        # Keep the Python wrapper while the tab bar owns the C++ button.
+        view._close_button = btn
         btn.setObjectName("tabClose")
         btn.setIcon(icon("close", "#6b6b6b", 12))
         btn.setToolTip("Закрыть вкладку")
