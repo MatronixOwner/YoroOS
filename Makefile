@@ -99,9 +99,11 @@ $(BUILD)/native64_kernel.o: native64/kernel.c native64/bootinfo.h | $(BUILD)
 	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
 $(BUILD)/native64_render.o: native64/render.c native64/bootinfo.h | $(BUILD)
 	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
+$(BUILD)/native64_cursor.o: native64/cursor.c native64/cursor.h native64/bibata_cursor_data.h | $(BUILD)
+	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
 $(BUILD)/native64_entry.o: native64/entry.S | $(BUILD)
 	$(CC) -m64 -c $< -o $@
-$(BUILD)/graphics.EFI: $(BUILD)/graphics_boot.o $(BUILD)/native64_kernel.o $(BUILD)/native64_render.o $(BUILD)/native64_entry.o
+$(BUILD)/graphics.EFI: $(BUILD)/graphics_boot.o $(BUILD)/native64_kernel.o $(BUILD)/native64_render.o $(BUILD)/native64_cursor.o $(BUILD)/native64_entry.o
 	$(LD) -mi386pep --subsystem 10 --entry efi_main --no-insert-timestamp -o $@ $(filter %.o,$^)
 $(BUILD)/graphics-efiboot.img: $(BUILD)/graphics.EFI tools/mkefiboot.py
 	$(PYTHON) tools/mkefiboot.py $< $@
@@ -113,3 +115,8 @@ graphics-iso: $(BUILD)/yoroos-native-graphical.iso
 test-graphics: | $(BUILD)
 	$(CC) -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -iquote native64 native64/render.c tests/native64_render_test.c -o $(BUILD)/native64-render-test
 	$(BUILD)/native64-render-test
+
+.PHONY: test-cursor
+test-cursor: | $(BUILD)
+	$(CC) -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -iquote native64 native64/cursor.c tests/native64_cursor_test.c -o $(BUILD)/native64-cursor-test
+	$(BUILD)/native64-cursor-test

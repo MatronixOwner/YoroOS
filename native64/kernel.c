@@ -1,4 +1,5 @@
 #include "bootinfo.h"
+#include "cursor.h"
 static inline void outb(uint16_t port, uint8_t value) {
     __asm__ volatile("outb %0,%1" : : "a"(value), "Nd"(port));
 }
@@ -20,7 +21,10 @@ static void serial_marker(void) {
     }
 }
 void yoro_kernel_main(const struct yoro_framebuffer *fb) {
+    static struct yoro_cursor cursor;
     yoro_render(fb);
+    yoro_cursor_init(&cursor, fb);
+    yoro_cursor_move(&cursor, (int)fb->width / 2, (int)fb->height / 2);
     serial_marker();
     for (;;) __asm__ volatile("hlt");
 }

@@ -2,7 +2,7 @@ name: Native UEFI graphics test
 on:
   push:
     branches: ['arena/**']
-    paths: ['native64/**', 'efi/**', 'tests/native64_render_test.c', 'Makefile', '.github/workflows/native-graphics-test.yml']
+    paths: ['native64/**', 'efi/**', 'tests/native64_render_test.c', 'tests/native64_cursor_test.c', 'Makefile', '.github/workflows/native-graphics-test.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -17,7 +17,7 @@ jobs:
       - name: Build and test graphics
         run: |
           set -o pipefail
-          make graphics-iso test-graphics test 2>&1 | tee build-log.txt
+          make graphics-iso test-graphics test-cursor test 2>&1 | tee build-log.txt
           python3 tools/verify_iso.py dist/yoroos-native-graphics-dev1.iso | tee -a build-log.txt
       - name: Boot UEFI and check kernel marker
         run: |
@@ -26,7 +26,7 @@ jobs:
           [ -f "$firmware" ] || firmware=/usr/share/OVMF/OVMF_CODE.fd
           timeout 50s qemu-system-x86_64 -machine q35 -m 256 \
             -drive if=pflash,format=raw,readonly=on,file="$firmware" \
-            -cdrom dist/yoroos-native-graphics-dev1.iso -boot d \
+            -cdrom build/yoroos-native-graphical.iso -boot d \
             -display none -monitor none -serial file:build/serial.log -no-reboot >qemu-log.txt 2>&1
           code=$?
           set -e
@@ -58,6 +58,6 @@ jobs:
         with:
           name: native-graphics-test
           path: |
-            dist/yoroos-native-graphics-dev1.iso
+            build/yoroos-native-graphical.iso
             build/serial.log
           if-no-files-found: ignore

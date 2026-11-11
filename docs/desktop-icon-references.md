@@ -46,3 +46,11 @@ https://www.gnome-look.org/s/Gnome/p/1661983
   https://www.reddit.com/r/unixporn/comments/e9rqbr/plasma_sweet_kde_w_kvantum/
 - Каталог наборов иконок, включая Zafiro и Candy:
   https://www.gnome-look.org/browse?cat=132&ord=plinged
+
+## Курсор
+
+Владелец выбрал **Bibata**. Первый вариант для разработки — белый Modern Ice
+(цвет выбран временно; владелец цвет пока не уточнил). Исходный файл, автор и
+лицензия GPL-3.0: `assets/cursors/bibata/README.md`. Подключение мыши Hyper-V
+Gen2 — отдельная задача; появление указателя само по себе не означает работу
+мыши.
