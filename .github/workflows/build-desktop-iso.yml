@@ -68,7 +68,7 @@ jobs:
       - name: UEFI live boot smoke test
         run: |
           set -o pipefail
-          sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log 2>&1 | tee out/uefi-smoke.log
+          sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log 2>&1 | sudo tee out/uefi-smoke.log
 
       - name: Post diagnostics (annotations + commit comment)
         if: always()
