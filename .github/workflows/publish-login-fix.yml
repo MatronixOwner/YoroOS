@@ -1,0 +1,40 @@
+name: Publish Live login fix
+on:
+  push:
+    branches: ['arena/935b4efd-yoroos']
+    paths: ['.github/workflows/publish-login-fix.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN: '43021431596'
+      BUILD_SHA: 'a6627978118b6506adbfe294da43458221837450'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify build and session tests
+        run: |
+          set -euxo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN" > run.json
+          jq -e --arg sha "$BUILD_SHA" '.head_sha == $sha and .conclusion == "success"' run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN/jobs" > jobs.json
+          jq -e '[.jobs[] | .steps[] | select(.name == "Build ISO in Debian (trixie) container" or .name == "UEFI live boot smoke test" or .name == "Verify Live user and Plasma session" or .name == "Upload ISO artifact") | .conclusion] == ["success","success","success","success"]' jobs.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          run-id: ${{ env.BUILD_RUN }}
+          github-token: ${{ github.token }}
+          path: release-files
+      - name: Upload ISO and checksum
+        run: |
+          set -euxo pipefail
+          cd release-files
+          sha256sum -c yoroos-desktop-amd64.iso.sha256
+          mv yoroos-desktop-amd64.iso yoroos-debian13-live-a6627978118b-amd64.iso
+          sha256sum yoroos-debian13-live-a6627978118b-amd64.iso > SHA256SUMS.txt
+          gh release upload desktop-debian13-live-a6627978118b yoroos-debian13-live-a6627978118b-amd64.iso SHA256SUMS.txt
