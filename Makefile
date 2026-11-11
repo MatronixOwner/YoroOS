@@ -92,7 +92,7 @@ test: | $(BUILD)
 	$(BUILD)/yorofs-test
 
 # Separate experimental UEFI x86-64 graphical image. BIOS retains the old shell.
-NATIVE64_FLAGS := $(EFI_CFLAGS) -mno-sse -mno-sse2 -mno-mmx -msoft-float -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables
+NATIVE64_FLAGS := $(EFI_CFLAGS) -march=x86-64 -mtune=generic -mno-sse -mno-sse2 -mno-mmx -msoft-float -fno-ident -fno-asynchronous-unwind-tables -fno-unwind-tables
 $(BUILD)/graphics_boot.o: efi/graphics_boot.c efi/efi.h native64/bootinfo.h | $(BUILD)
 	$(CC) $(NATIVE64_FLAGS) -c $< -o $@
 $(BUILD)/native64_kernel.o: native64/kernel.c native64/bootinfo.h | $(BUILD)
