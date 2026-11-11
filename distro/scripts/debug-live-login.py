@@ -2,6 +2,7 @@
 """CI-only investigation of Live user/session. Never ship the debug kernel arg."""
 import base64
 import select
+import re
 import socket
 import subprocess
 import sys
@@ -30,7 +31,7 @@ try:
     while time.monotonic() < deadline:
         if qemu.poll() is not None:
             raise RuntimeError('QEMU exited: ' + qemu.stdout.read())
-        if serial_log.exists() and b'graphical.target' in serial_log.read_bytes():
+        if serial_log.exists() and re.search(rb'Reached target[^\n]*graphical\.target', serial_log.read_bytes()):
             break
         time.sleep(3)
     else:
@@ -50,6 +51,12 @@ fi
 echo USER_DETAILS
 getent passwd yoro || true
 passwd -S yoro || true
+hash=$(getent shadow yoro | cut -d: -f2)
+if [ -n "$hash" ] && perl -e 'exit(crypt("live", $ARGV[0]) eq $ARGV[0] ? 0 : 1)' "$hash"; then
+    echo YORO_LIVE_PASSWORD_VALID
+else
+    echo YORO_LIVE_PASSWORD_INVALID
+fi
 ls -la /usr/share/xsessions/
 for f in /etc/sddm.conf /etc/sddm.conf.d/*; do echo FILE:$f; cat "$f" 2>/dev/null || true; done
 echo SDDM_JOURNAL
@@ -87,6 +94,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('Debug shell did not complete diagnosis')
     if expect_desktop and b'\r\nYORO_DESKTOP_RUNNING\r\n' not in data:
         raise RuntimeError('The live user or Plasma desktop did not start')
+    if expect_desktop and b'\r\nYORO_LIVE_PASSWORD_VALID\r\n' not in data:
+        raise RuntimeError('The expected Live fallback password is not valid')
 
 finally:
     qemu.terminate()
