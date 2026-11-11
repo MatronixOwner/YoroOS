@@ -18,6 +18,19 @@ pid=$!
 cleanup() { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
 trap cleanup EXIT
 for ((i=0; i<72; i++)); do
+    # Select the default GRUB entry also on older images with no timeout.
+    if [ "$i" -eq 8 ]; then
+        python3 - "$monitor" <<'PYKEY'
+import socket, sys
+try:
+    s = socket.socket(socket.AF_UNIX)
+    s.connect(sys.argv[1])
+    s.sendall(b'sendkey ret\n')
+    s.close()
+except OSError as exc:
+    print('Could not send GRUB selection:', exc)
+PYKEY
+    fi
     if [ -f "$log" ] && grep -aEiq 'Reached target.*(graphical|Graphical)|Started.*(Simple Desktop Display Manager|sddm)' "$log"; then
         echo 'UEFI smoke test: display manager or graphical.target reached (Plasma session not verified).'
         exit 0

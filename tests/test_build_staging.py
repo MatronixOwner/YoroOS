@@ -46,6 +46,13 @@ class BuildStagingTest(unittest.TestCase):
             self.assertTrue((inc / 'usr/share/applications/yoro-files.desktop').exists())
             self.assertTrue((inc / 'usr/lib/yoroos/hide-foreign-menu-items.py').exists())
             subprocess.run(['sh', '-n', str(work / 'hooks/normal/9100-yoro.hook.chroot')], check=True)
+            hook = work / 'hooks/normal/9200-yoro-boot.hook.binary'
+            subprocess.run(['sh', '-n', str(hook)], check=True)
+            image_dir = Path(td) / 'image'
+            (image_dir / 'boot/grub').mkdir(parents=True)
+            (image_dir / 'boot/grub/grub.cfg').write_text('source /boot/grub/config.cfg\nmenuentry test {}\n')
+            subprocess.run(['sh', str(hook)], cwd=image_dir, check=True)
+            self.assertIn('set timeout=5', (image_dir / 'boot/grub/grub.cfg').read_text())
             self.assertTrue((root / 'out/yoroos-desktop-amd64.iso.sha256').exists())
 
 if __name__ == '__main__': unittest.main()

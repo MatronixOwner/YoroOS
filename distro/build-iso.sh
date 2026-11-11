@@ -221,6 +221,17 @@ dpkg-query -W -f='${Package}\t${Version}\n' > /usr/share/doc/yoroos/packages.tsv
 EOF
 chmod +x config/hooks/normal/9100-yoro.hook.chroot
 
+# Debian Live defaults to an indefinitely waiting boot menu. Start the Live
+# entry automatically while leaving a short window for firmware/utility choice.
+cat > config/hooks/normal/9200-yoro-boot.hook.binary <<'EOBOOT'
+#!/bin/sh
+set -e
+[ -f boot/grub/grub.cfg ]
+sed -i '/^source \/boot\/grub\/config.cfg/a set default=0\nset timeout=5' boot/grub/grub.cfg
+grep -q '^set timeout=5$' boot/grub/grub.cfg
+EOBOOT
+chmod +x config/hooks/normal/9200-yoro-boot.hook.binary
+
 # ---- build ---------------------------------------------------------------
 lb build
 

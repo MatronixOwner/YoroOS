@@ -7,6 +7,7 @@ permissions:
   actions: read
 jobs:
   diagnose:
+    if: contains(github.event.head_commit.message, 'UEFI boot')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
