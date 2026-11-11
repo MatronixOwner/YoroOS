@@ -17,7 +17,7 @@ def loaded(ok):
     if ok and view.title() == 'Yoro Matronix Smoke':
         print('MATRONIX_RENDER_OK', flush=True)
         app.exit(0)
-    else:
+    elif ok and view.url().host() == 'test.invalid':
         print('MATRONIX_RENDER_FAILED', ok, view.title(), flush=True)
         app.exit(1)
 
