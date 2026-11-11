@@ -7,16 +7,18 @@ permissions:
   contents: write
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - name: Run GUI tests with timeout
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq python3-pyqt6 python3-pyqt6.qtmultimedia
           set -o pipefail
-          QT_QPA_PLATFORM=offscreen timeout 90 /usr/bin/python3 -m unittest discover -s tests -p 'test_qt_ui.py' -v 2>&1 | tee qt.log
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work -e QT_QPA_PLATFORM=offscreen debian:trixie bash -euc '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-pyqt6 python3-pyqt6.qtmultimedia
+            timeout -k 5 90 /usr/bin/python3 -m unittest discover -s tests -p "test_qt_ui.py" -v
+          ' 2>&1 | tee qt.log
       - name: Record output
         if: always()
         env:
