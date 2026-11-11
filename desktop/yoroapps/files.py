@@ -2,10 +2,10 @@
 import os
 import sys
 
-from PyQt6.QtCore import QDir, QMimeData, QSize, Qt, QUrl
+from PyQt6.QtCore import QDir, QFileInfo, QMimeData, QMimeDatabase, QSize, Qt, QUrl
 from PyQt6.QtGui import QAction, QDesktopServices, QFileSystemModel, QIcon, QKeySequence
 from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout,
-    QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem,
+    QFileIconProvider, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem,
     QMainWindow, QMenu, QMessageBox, QSplitter, QStackedWidget, QToolButton,
     QTreeView, QVBoxLayout, QWidget)
 
@@ -24,6 +24,24 @@ PLACES = [
 CUT_MIME = "application/x-yoro-cut"
 
 
+class ThemedFileIcons(QFileIconProvider):
+    """Use the desktop icon theme for file rows, with Qt's native fallback."""
+    def __init__(self):
+        super().__init__()
+        self.mime_db = QMimeDatabase()
+
+    def icon(self, value):
+        if isinstance(value, QFileInfo):
+            if value.isDir():
+                name = 'folder'
+            else:
+                name = self.mime_db.mimeTypeForFile(value).iconName() or 'text-x-generic'
+            themed = QIcon.fromTheme(name)
+            if not themed.isNull():
+                return themed
+        return super().icon(value)
+
+
 class Files(QMainWindow):
     def __init__(self, start=None):
         super().__init__()
@@ -34,6 +52,8 @@ class Files(QMainWindow):
         self._history_index = -1
         self._path = ""
         self.model = QFileSystemModel(self)
+        self.icon_provider = ThemedFileIcons()
+        self.model.setIconProvider(self.icon_provider)
         self.model.setReadOnly(True)
         self.model.setFilter(QDir.Filter.AllEntries | QDir.Filter.NoDotAndDotDot | QDir.Filter.AllDirs)
         self.model.setNameFilterDisables(False)
