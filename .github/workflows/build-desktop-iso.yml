@@ -37,7 +37,7 @@ jobs:
             apt-get update -qq
             DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-pyqt6 python3-pyqt6.qtmultimedia
             timeout -k 5 120 /usr/bin/python3 -m unittest discover -s tests -p "test_qt_ui.py" -v
-          ' 
+          '
 
       - name: Free disk space
         run: |

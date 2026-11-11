@@ -36,6 +36,7 @@ class WidgetTest(unittest.TestCase):
             self.assertTrue(w._save_to(str(Path(td) / 'hello.txt')))
             self.assertEqual((Path(td) / 'hello.txt').read_text(), 'Привет')
             w.editor.setPlainText('изменено')
+            w.editor.document().setModified(True)
             with patch('yoroapps.notepad.QMessageBox.critical'):
                 self.assertFalse(w._save_to(str(Path(td) / 'missing' / 'file.txt')))
             self.assertTrue(w.editor.document().isModified())
