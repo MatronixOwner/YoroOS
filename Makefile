@@ -120,3 +120,8 @@ test-graphics: | $(BUILD)
 test-cursor: | $(BUILD)
 	$(CC) -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -iquote native64 native64/cursor.c tests/native64_cursor_test.c -o $(BUILD)/native64-cursor-test
 	$(BUILD)/native64-cursor-test
+
+.PHONY: test-hyperv-input
+test-hyperv-input: | $(BUILD)
+	$(CC) -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -iquote native64/hyperv native64/hyperv/ring.c native64/hyperv/mouse.c tests/hyperv_input_test.c -o $(BUILD)/hyperv-input-test
+	$(BUILD)/hyperv-input-test
