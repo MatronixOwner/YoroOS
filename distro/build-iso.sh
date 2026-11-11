@@ -140,7 +140,9 @@ chmod +x "$INC/usr/local/bin/matronix-browser"
 
 # The image is live-only; auto-login into the Plasma X11 session in the VM.
 # X11 is selected explicitly and kwin-x11 is installed (not a recommends).
-mkdir -p "$INC/etc/sddm.conf.d" "$INC/etc/initramfs-tools" "$INC/usr/lib/yoroos"
+mkdir -p "$INC/etc/sddm.conf.d" "$INC/etc/initramfs-tools" "$INC/usr/lib/yoroos" "$INC/usr/lib/live/config"
+cp "$REPO_ROOT/distro/live-config/9999-yoro-sddm" "$INC/usr/lib/live/config/9999-yoro-sddm"
+chmod +x "$INC/usr/lib/live/config/9999-yoro-sddm"
 cat > "$INC/etc/sddm.conf.d/90-yoro-live.conf" <<'EOSDDM'
 [Autologin]
 User=yoro

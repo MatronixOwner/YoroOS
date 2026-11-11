@@ -39,6 +39,12 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
             self.assertIn('Session=plasmax11.desktop', (inc / 'etc/sddm.conf.d/90-yoro-live.conf').read_text())
+            hook_live = inc / 'usr/lib/live/config/9999-yoro-sddm'
+            self.assertTrue(hook_live.exists())
+            self.assertTrue(os.access(hook_live, os.X_OK))
+            subprocess.run(['sh', '-n', str(hook_live)], check=True)
+            self.assertIn('Session=plasmax11.desktop', hook_live.read_text())
+            self.assertIn('> /etc/sddm.conf', hook_live.read_text())
             modules = (inc / 'etc/initramfs-tools/modules').read_text()
             self.assertIn('hid_hyperv\n', modules)
             self.assertIn('hyperv_keyboard\n', modules)

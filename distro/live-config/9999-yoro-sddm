@@ -1,0 +1,12 @@
+#!/bin/sh
+# live-config's SDDM component writes /etc/sddm.conf and can override conf.d.
+# Run after it, while still in early boot, for this non-persistent live image.
+set -eu
+getent passwd yoro >/dev/null
+test -f /usr/share/xsessions/plasmax11.desktop
+cat > /etc/sddm.conf <<'CONFIG'
+[Autologin]
+User=yoro
+Session=plasmax11.desktop
+Relogin=false
+CONFIG
