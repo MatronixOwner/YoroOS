@@ -944,15 +944,11 @@ class TabBar(QTabBar):
     TAB_MIN, TAB_MAX = 120, 220
 
     def tabSizeHint(self, index):  # noqa: N802 (имя из Qt API)
-        # Qt/PySide 6.8 on Debian can re-enter QTabBar layout while the base
-        # implementation builds its style option, causing a native crash.
-        # Derive a stable hint without invoking the base virtual method.
-        height = max(32, self.fontMetrics().height() + 16)
+        base = super().tabSizeHint(index)
         if self.tabData(index):
-            return QSize(PINNED_WIDTH, height)
-        width = max(self.TAB_MIN, min(self.TAB_MAX,
-                    self.fontMetrics().horizontalAdvance(self.tabText(index)) + 64))
-        return QSize(width, height)
+            return QSize(PINNED_WIDTH, base.height())
+        width = max(self.TAB_MIN, min(self.TAB_MAX, base.width()))
+        return QSize(width, base.height())
 
 
 # ---------------------------------------------------------------------------
@@ -1291,8 +1287,6 @@ class MainWindow(QMainWindow):
         # Именованный профиль сохраняет cookies и вход между запусками.
         # defaultProfile() без имени работает в режиме «приватного» профиля и ничего не пишет на диск.
         self.profile = QWebEngineProfile(APP_NAME, self)
-        # Keep the PySide wrapper alive as long as its owning profile.
-        self.script_collection = self.profile.scripts()
         self.profile.downloadRequested.connect(self.on_download)
         self._install_password_scripts()
 
@@ -1679,7 +1673,7 @@ class MainWindow(QMainWindow):
             script.setInjectionPoint(point)
             script.setWorldId(PW_WORLD)
             script.setRunsOnSubFrames(False)
-            self.script_collection.insert(script)
+            self.profile.scripts().insert(script)
 
     def on_password_offer(self, view, url: QUrl, user: str, password: str):
         """Страница отправила форму входа: предлагаем сохранить пароль."""
@@ -1740,9 +1734,9 @@ class MainWindow(QMainWindow):
         zoom = p.get("zoom") / 100.0
 
         # Выделение текста на сайтах: переустанавливаем скрипт
-        for script in self.script_collection.toList():
+        for script in self.profile.scripts().toList():
             if script.name() in (NO_SELECT_NAME, GOOGLE_SCRIPT_NAME):
-                self.script_collection.remove(script)
+                self.profile.scripts().remove(script)
         if not p.get("text_selection"):
             self._install_no_select_script()
         self._install_google_script()
@@ -1786,7 +1780,7 @@ class MainWindow(QMainWindow):
         script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
         script.setRunsOnSubFrames(False)
-        self.script_collection.insert(script)
+        self.profile.scripts().insert(script)
 
     def _install_no_select_script(self):
         script = QWebEngineScript()
@@ -1795,7 +1789,7 @@ class MainWindow(QMainWindow):
         script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
         script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
         script.setRunsOnSubFrames(True)
-        self.script_collection.insert(script)
+        self.profile.scripts().insert(script)
 
     def clear_browsing_data(self):
         self.profile.cookieStore().deleteAllCookies()

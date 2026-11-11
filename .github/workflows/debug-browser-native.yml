@@ -22,7 +22,10 @@ jobs:
             ln -s /work/desktop/matronix-browser /usr/share/matronix-browser
             useradd -m tester
             cd /tmp
-            runuser -u tester -- env PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 xvfb-run -a timeout 120 /usr/bin/python3 /work/distro/scripts/matronix-smoke.py
+            for run in 1 2 3; do
+              echo "BROWSER_REPEAT=$run"
+              runuser -u tester -- env PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 xvfb-run -a timeout 120 /usr/bin/python3 /work/distro/scripts/matronix-smoke.py
+            done
 
           ' 2>&1 | tee native.log
       - name: Record output

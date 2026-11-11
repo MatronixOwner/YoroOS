@@ -9,4 +9,4 @@ Runtime on YoroOS: Python 3 + PySide6 (Debian packages python3-pyside6.*)
                    + python3-cryptography.
 Update: copy a newer matronix.py (+assets) from upstream over these files.
 
-YoroOS patch: TabBar.tabSizeHint avoids a Qt/PySide 6.8 native crash during layout.
+YoroOS patch: retain tab close-button wrappers to avoid a Qt/PySide 6 native crash.
