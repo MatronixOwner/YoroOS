@@ -7,7 +7,7 @@
 #     sudo ./distro/build-iso.sh [output-dir]
 #
 # Result: <output-dir>/yoroos-desktop-amd64.iso (+ .sha256)
-# Boots on BIOS and UEFI (incl. Hyper-V Gen2, signed Debian shim).
+# UEFI Live image for Hyper-V Gen2. Secure Boot behavior is not yet verified.
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -37,14 +37,22 @@ lb config \
     --memtest none \
     --iso-application "YoroOS Desktop" \
     --iso-volume "YOROOS" \
-    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru"
+    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru console=tty0 console=ttyS0,115200n8"
 
 # ---- package selection -------------------------------------------------
 mkdir -p config/package-lists
 cat > config/package-lists/yoro.list.chroot <<'EOF'
-# ONLY the Plasma shell core - user applications are our own Yoro apps.
+# Minimal Debian Live plus Plasma shell. The kernel/userspace are Linux.
+linux-image-amd64
+live-boot
+live-config
+live-config-systemd
+initramfs-tools
+kmod
+# Plasma shell, X11 session and Hyper-V-friendly graphics/input.
 plasma-desktop
 plasma-workspace
+kwin-x11
 plasma-nm
 plasma-pa
 powerdevil
@@ -57,12 +65,12 @@ sddm
 sddm-theme-breeze
 breeze-icon-theme
 xorg
+xserver-xorg-video-fbdev
+xserver-xorg-input-libinput
+dbus-x11
 upower
 udisks2
 qdbus-qt6
-# Windows programs support
-wine
-winetricks
 # Yoro apps runtime (incl. Matronix Browser engine)
 python3-pyqt6
 python3-pyqt6.qtmultimedia
@@ -79,10 +87,6 @@ network-manager
 pipewire
 wireplumber
 sudo
-curl
-git
-nano
-htop
 xdg-utils
 fonts-noto
 fonts-noto-color-emoji
@@ -132,6 +136,26 @@ exec python3 /usr/share/matronix-browser/matronix.py "$@"
 EOFM
 chmod +x "$INC/usr/local/bin/matronix-browser"
 
+# The image is live-only; auto-login into the Plasma X11 session in the VM.
+# X11 is selected explicitly and kwin-x11 is installed (not a recommends).
+mkdir -p "$INC/etc/sddm.conf.d" "$INC/etc/initramfs-tools" "$INC/usr/lib/yoroos"
+cat > "$INC/etc/sddm.conf.d/90-yoro-live.conf" <<'EOSDDM'
+[Autologin]
+User=yoro
+Session=plasmax11.desktop
+Relogin=false
+EOSDDM
+# Modules required to see Hyper-V Gen2 synthetic storage, mouse and keyboard.
+cat > "$INC/etc/initramfs-tools/modules" <<'EOHV'
+hv_vmbus
+hv_storvsc
+hv_netvsc
+hid_hyperv
+hyperv_keyboard
+hyperv_fb
+EOHV
+cp "$REPO_ROOT/distro/scripts/hide-foreign-menu-items.py" "$INC/usr/lib/yoroos/"
+
 # Desktop shortcuts for the live user.
 mkdir -p "$INC/etc/skel/Desktop"
 cp "$REPO_ROOT/desktop/applications/yoro-computer.desktop" "$INC/etc/skel/Desktop/"
@@ -158,18 +182,21 @@ ID_LIKE=debian
 HOME_URL="https://github.com/MatronixOwner/YoroOS"
 EOF
 
-# ---- hooks: 32-bit Wine etc. --------------------------------------------
+# ---- hooks: configuration and package inventory -------------------------
 mkdir -p config/hooks/normal
 cat > config/hooks/normal/9100-yoro.hook.chroot <<'EOF'
 #!/bin/sh
 set -e
 update-desktop-database /usr/share/applications || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
-# 32-bit Windows support is optional; do not fail the build over it.
-if dpkg --add-architecture i386 2>/dev/null; then
-    apt-get update || true
-    DEBIAN_FRONTEND=noninteractive apt-get install -y wine32 || true
-fi
+# Hide launchers for dependency-provided tools without removing components
+# required by Plasma, hardware, MIME handlers, or user-installed apps later.
+python3 /usr/lib/yoroos/hide-foreign-menu-items.py
+# These operations change only the live image being built in the chroot.
+systemctl set-default graphical.target
+update-initramfs -u -k all
+mkdir -p /usr/share/doc/yoroos
+dpkg-query -W -f='${Package}\t${Version}\n' > /usr/share/doc/yoroos/packages.tsv
 EOF
 chmod +x config/hooks/normal/9100-yoro.hook.chroot
 
@@ -181,5 +208,4 @@ cp "$ISO_FILE" "$OUT_DIR/yoroos-desktop-amd64.iso"
 (cd "$OUT_DIR" && sha256sum yoroos-desktop-amd64.iso > yoroos-desktop-amd64.iso.sha256)
 echo "Built: $OUT_DIR/yoroos-desktop-amd64.iso"
 
-# NOTE (roadmap): our native YoroOS Core kernel will be added as a second
-# GRUB boot entry (needs a Multiboot header in kernel/entry.S first).
+# The separately developed native kernel is not part of this Linux Live ISO.

@@ -5,17 +5,24 @@ name: Publish YoroOS Desktop pre-release
 # run (RUN_ID below — update it for the next pre-release) and publishes
 # it as a GitHub pre-release with the ISO attached for direct download.
 on:
-  push:
-    tags:
-      - "desktop-*-pre*"
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: "Successful desktop build run ID at the same commit as this ref"
+        required: true
+        type: string
+      release_tag:
+        description: "Existing release tag pointing at the same commit"
+        required: true
+        type: string
 
 permissions:
   contents: write   # create the release
   actions: read     # download the artifact from the build run
 
 env:
-  # desktop-1.0-pre1 ISO was built by run #41534674163 (tag desktop-1.0-dev8)
-  BUILD_RUN_ID: "41534674163"
+  BUILD_RUN_ID: ${{ inputs.build_run_id }}
+  RELEASE_TAG: ${{ inputs.release_tag }}
 
 jobs:
   release:
@@ -23,6 +30,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Verify build run and tag match the checked out commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run view "$BUILD_RUN_ID" --json headSha,conclusion,workflowName > run.json
+          test "$(jq -r .headSha run.json)" = "$GITHUB_SHA"
+          test "$(jq -r .conclusion run.json)" = success
+          test "$(jq -r .workflowName run.json)" = 'Build YoroOS Desktop ISO (Linux)'
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$GITHUB_SHA"
 
       - name: Download ISO from build run
         uses: actions/download-artifact@v4
@@ -34,7 +53,7 @@ jobs:
 
       - name: Prepare release files
         run: |
-          ver="${GITHUB_REF_NAME#desktop-}"          # 1.0-pre1
+          ver="${RELEASE_TAG#desktop-}"          # 1.0-pre1
           mv release-files/yoroos-desktop-amd64.iso \
              "release-files/yoroos-desktop-${ver}-amd64.iso"
           rm -f release-files/yoroos-desktop-amd64.iso.sha256
@@ -45,17 +64,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ver="${GITHUB_REF_NAME#desktop-}"
+          ver="${RELEASE_TAG#desktop-}"
           notes="distro/release-notes-${ver}.md"
           if [ -f "$notes" ]; then
-            gh release create "$GITHUB_REF_NAME" \
+            gh release create "$RELEASE_TAG" \
               release-files/*.iso release-files/SHA256SUMS.txt \
               --prerelease \
               --title "YoroOS Desktop ${ver} (Pre-release)" \
               --notes-file "$notes" \
               --verify-tag
           else
-            gh release create "$GITHUB_REF_NAME" \
+            gh release create "$RELEASE_TAG" \
               release-files/*.iso release-files/SHA256SUMS.txt \
               --prerelease \
               --title "YoroOS Desktop ${ver} (Pre-release)" \

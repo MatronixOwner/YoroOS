@@ -1,11 +1,13 @@
 name: Build YoroOS Desktop ISO (Linux)
 
-# Manual trigger: builds the big desktop ISO (KDE + Chromium + Wine)
+# Builds the Debian Live desktop ISO (Plasma + Yoro apps)
 # inside a Debian container on the GitHub runner and stores it as an
 # artifact. Takes a while (large download of Debian packages).
 on:
   workflow_dispatch:
   push:
+    branches:
+      - "arena/935b4efd-yoroos"
     tags:
       - "desktop-*-dev*"
 
@@ -20,6 +22,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate scripts and desktop configuration
+        run: |
+          bash -n distro/build-iso.sh distro/scripts/qemu-live-smoke.sh
+          python3 -m unittest discover -s tests -p 'test_desktop_branding.py' -v
+          python3 -m unittest discover -s tests -p 'test_build_staging.py' -v
+          python3 -m py_compile desktop/yoroapps/*.py desktop/matronix-browser/matronix.py
 
       - name: Free disk space
         run: |
@@ -43,6 +52,12 @@ jobs:
               bash -x ./distro/build-iso.sh out
             ' 2>&1 | tee build.log
 
+      - name: Install QEMU and UEFI firmware for a basic boot test
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf
+
+      - name: UEFI live boot smoke test
+        run: sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log
+
       - name: Post diagnostics (annotations + commit comment)
         if: always()
         env:
@@ -54,15 +69,21 @@ jobs:
           tail -n 5 build.log | sed 's/%/%25/g' \
             | while IFS= read -r l; do echo "::notice::TAIL: $l"; done || true
           { echo "Build log tail (run ${GITHUB_RUN_ID})"; echo; echo '```';
-            tail -n 100 build.log || true; echo '```'; } > comment.md
+            tail -n 100 build.log || true; echo '```';
+            if [ -f out/uefi-serial.log ]; then
+              echo; echo 'UEFI smoke test serial tail:'; echo '```';
+              tail -n 50 out/uefi-serial.log || true; echo '```';
+            fi; } > comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
             -F body=@comment.md || true
 
       - name: Upload ISO artifact
+        if: always() && hashFiles('out/yoroos-desktop-amd64.iso') != ''
         uses: actions/upload-artifact@v4
         with:
           name: yoroos-desktop-amd64-iso
           path: |
             out/yoroos-desktop-amd64.iso
             out/yoroos-desktop-amd64.iso.sha256
+            out/uefi-serial.log
           if-no-files-found: error

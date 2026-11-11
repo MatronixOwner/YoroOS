@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 LAUNCHERS = [
     "applications:matronix-browser.desktop",
@@ -29,6 +30,9 @@ def _qdbus():
     for name in ("qdbus6", "qdbus", "qdbus-qt6"):
         path = shutil.which(name)
         if path:
+            return path
+    for path in ("/usr/lib/qt6/bin/qdbus",):
+        if os.path.isfile(path) and os.access(path, os.X_OK):
             return path
     return None
 
@@ -103,9 +107,16 @@ def main():
     marker = _marker_path()
     if os.path.exists(marker):
         return
-    ok = apply_panel_preset()
-    set_wallpaper(WALLPAPER)
+    ok = False
+    # Plasma may not have acquired its D-Bus name at the autostart phase.
+    for attempt in range(30):
+        if apply_panel_preset():
+            ok = True
+            break
+        if attempt < 29:
+            time.sleep(1)
     if ok:
+        set_wallpaper(WALLPAPER)
         os.makedirs(os.path.dirname(marker), exist_ok=True)
         with open(marker, "w", encoding="utf-8") as f:
             f.write("done\n")
