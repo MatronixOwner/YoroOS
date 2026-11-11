@@ -1,4 +1,4 @@
-name: Diagnose Matronix tab bar
+name: Diagnose Matronix upstream style
 on:
   push:
     branches: ['arena/935b4efd-yoroos']
