@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 """CI-only: run the actual Matronix 1.0.0 window and render local HTML."""
 import sys
+import faulthandler
+faulthandler.enable()
+print("SMOKE_IMPORT", flush=True)
 sys.path.insert(0, '/usr/share/matronix-browser')
 from PySide6.QtCore import QTimer, QUrl
 from PySide6.QtWidgets import QApplication
 import matronix
 
+print("SMOKE_QAPPLICATION", flush=True)
 app = QApplication(sys.argv)
 app.setApplicationName('Matronix')
 app.setOrganizationName('Matronix')
+print("SMOKE_WINDOW", flush=True)
 window = matronix.MainWindow()
+print("SMOKE_TAB", flush=True)
 view = window.add_tab()
+print("SMOKE_SHOW", flush=True)
 window.show()
 
 def loaded(ok):
