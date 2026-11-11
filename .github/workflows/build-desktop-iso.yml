@@ -63,10 +63,12 @@ jobs:
             ' 2>&1 | tee build.log
 
       - name: Install QEMU and UEFI firmware for a basic boot test
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf tesseract-ocr
 
       - name: UEFI live boot smoke test
-        run: sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log
+        run: |
+          set -o pipefail
+          sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log 2>&1 | tee out/uefi-smoke.log
 
       - name: Post diagnostics (annotations + commit comment)
         if: always()
@@ -83,6 +85,8 @@ jobs:
             if [ -f out/uefi-serial.log ]; then
               echo; echo 'UEFI smoke test serial tail:'; echo '```';
               tail -n 50 out/uefi-serial.log || true; echo '```';
+              echo; echo 'UEFI smoke diagnostic:'; echo '```';
+              cat out/uefi-smoke.log || true; echo '```';
             fi; } > comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
             -F body=@comment.md || true
@@ -96,6 +100,8 @@ jobs:
             out/yoroos-desktop-amd64.iso
             out/yoroos-desktop-amd64.iso.sha256
             out/uefi-serial.log
+            out/uefi-smoke.log
+            out/uefi-serial.log.ppm
           if-no-files-found: error
 
       - name: Publish tested Live ISO as a pre-release
