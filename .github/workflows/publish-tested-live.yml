@@ -1,0 +1,45 @@
+name: Publish verified Live artifact
+on:
+  push:
+    branches: ["arena/935b4efd-yoroos"]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    if: contains(github.event.head_commit.message, 'Publish tested Live artifact')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUILD_RUN: '43011702602'
+      BUILD_SHA: 'efc817d2e6e3bd39d94a5fc95e2081b7f23afe69'
+    steps:
+      - name: Confirm image build and UEFI smoke test succeeded
+        run: |
+          set -euxo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN" > run.json
+          jq -e --arg sha "$BUILD_SHA" '.head_sha == $sha and .status == "completed"' run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN/jobs" > jobs.json
+          jq -e '[.jobs[] | .steps[] | select(.name == "Build ISO in Debian (trixie) container" or .name == "UEFI live boot smoke test" or .name == "Upload ISO artifact") | .conclusion] == ["success","success","success"]' jobs.json
+      - name: Download verified build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          run-id: ${{ env.BUILD_RUN }}
+          github-token: ${{ github.token }}
+          path: out
+      - name: Publish Live pre-release
+        run: |
+          set -euxo pipefail
+          (cd out && sha256sum -c yoroos-desktop-amd64.iso.sha256)
+          mv out/yoroos-desktop-amd64.iso out/yoroos-debian13-live-efc817d2e6e3-amd64.iso
+          (cd out && sha256sum yoroos-debian13-live-efc817d2e6e3-amd64.iso > SHA256SUMS.txt)
+          gh release create desktop-debian13-live-efc817d2e6e3 out/yoroos-debian13-live-efc817d2e6e3-amd64.iso out/SHA256SUMS.txt \
+            --target "$BUILD_SHA" --prerelease --title 'YoroOS Debian 13 Live test efc817d2e6e3' \
+            --notes 'UEFI Live test image, no installer or persistence. In QEMU/OVMF it reached graphical.target; Plasma session and Hyper-V input are not verified. Test Hyper-V Gen2 with Secure Boot disabled initially. Linux and Debian 13 are the base; the experimental native kernel is separate. Includes Matronix Browser, Colloid icons and Bibata Modern Ice cursors.'
+      - name: Report release errors
+        if: failure()
+        run: |
+          echo "Publishing artifact from build $BUILD_RUN failed. Check the workflow run $GITHUB_RUN_ID." > comment.md
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -F body=@comment.md || true

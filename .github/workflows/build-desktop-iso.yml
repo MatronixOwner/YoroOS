@@ -111,6 +111,7 @@ jobs:
         run: |
           set -euxo pipefail
           tag="desktop-debian13-live-${GITHUB_SHA:0:12}"
+          sudo chown -R "$(id -u):$(id -g)" out
           mv out/yoroos-desktop-amd64.iso "out/yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso"
           (cd out && sha256sum "yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso" > SHA256SUMS.txt)
           gh release create "$tag" "out/yoroos-debian13-live-${GITHUB_SHA:0:12}-amd64.iso" out/SHA256SUMS.txt \
