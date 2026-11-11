@@ -30,6 +30,6 @@ def loaded(ok):
         app.exit(1)
 
 view.loadFinished.connect(loaded)
-view.setHtml('<html><head><title>Yoro Matronix Smoke</title></head><body>Matronix test</body></html>', QUrl('https://test.invalid/'))
+QTimer.singleShot(5000, lambda: view.setHtml('<html><head><title>Yoro Matronix Smoke</title></head><body>Matronix test</body></html>', QUrl('https://test.invalid/')))
 QTimer.singleShot(90000, lambda: app.exit(2))
 sys.exit(app.exec())

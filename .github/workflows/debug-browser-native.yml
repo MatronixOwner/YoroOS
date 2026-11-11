@@ -17,16 +17,10 @@ jobs:
           docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work debian:trixie bash -euc '
             apt-get update -qq
             DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends xauth xvfb xserver-xorg-core libgl1-mesa-dri python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qtwidgets python3-pyside6.qtsvg python3-pyside6.qtwebchannel python3-pyside6.qtwebenginecore python3-pyside6.qtwebenginewidgets python3-cryptography
-            cp -r /work/desktop/matronix-browser /usr/share/matronix-browser
+            ln -s /work/desktop/matronix-browser /usr/share/matronix-browser
             useradd -m tester
             cd /tmp
-            echo MODE=noscripts
-            sed -i "s/self.script_collection.insert(script)/pass  # diagnostic/; s/self.script_collection.toList()/[]/" /usr/share/matronix-browser/matronix.py
-            runuser -u tester -- env PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 xvfb-run -a timeout 120 /usr/bin/python3 /work/distro/scripts/matronix-smoke.py || true
-            echo MODE=buttons
-            cp /work/desktop/matronix-browser/matronix.py /usr/share/matronix-browser/matronix.py
-            sed -i "/btn = QToolButton()/a\        self._kept_buttons = getattr(self, \"_kept_buttons\", []); self._kept_buttons.append(btn)" /usr/share/matronix-browser/matronix.py
-            runuser -u tester -- env PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 xvfb-run -a timeout 120 /usr/bin/python3 /work/distro/scripts/matronix-smoke.py || true
+            runuser -u tester -- env PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 xvfb-run -a timeout 120 /usr/bin/python3 /work/distro/scripts/matronix-smoke.py
 
           ' 2>&1 | tee native.log
       - name: Record output
