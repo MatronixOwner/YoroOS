@@ -55,7 +55,7 @@ jobs:
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 live-build debian-archive-keyring xorriso squashfs-tools \
-                grub-pc-bin grub-efi-amd64-bin ca-certificates
+                grub-pc-bin grub-efi-amd64-bin ca-certificates gtk-update-icon-cache
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 shim-signed grub-efi-amd64-signed syslinux isolinux || \
                 echo "optional bootloader packages unavailable, continuing"

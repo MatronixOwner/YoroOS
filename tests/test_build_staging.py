@@ -19,7 +19,14 @@ class BuildStagingTest(unittest.TestCase):
             (fake / 'id').write_text('#!/bin/sh\necho 0\n')
             (fake / 'lb').write_text('#!/bin/sh\n[ "$1" != build ] || touch image.iso\nexit 0\n')
             for p in fake.iterdir(): p.chmod(0o755)
-            env = dict(os.environ, PATH=str(fake) + os.pathsep + os.environ['PATH'])
+            themes = Path(td) / 'themes'
+            (themes / 'colloid').mkdir(parents=True)
+            (themes / 'colloid/install.sh').write_text('#!/bin/sh\nmkdir -p "$2/Colloid"\necho "[Icon Theme]" > "$2/Colloid/index.theme"\n')
+            (themes / 'colloid/LICENSE').write_text('Colloid license')
+            (themes / 'bibata-license.txt').write_text('Bibata license')
+            (themes / 'Bibata-Modern-Ice').mkdir()
+            (themes / 'Bibata-Modern-Ice/index.theme').write_text('[Icon Theme]\nName=Bibata\n')
+            env = dict(os.environ, PATH=str(fake) + os.pathsep + os.environ['PATH'], YORO_THEME_INPUT_DIR=str(themes))
             subprocess.run(['bash', str(root / 'distro/build-iso.sh'), str(root / 'out')], env=env, check=True, capture_output=True, text=True)
             work = root / 'distro/work/config'
             packages = (work / 'package-lists/yoro.list.chroot').read_text()
@@ -27,6 +34,10 @@ class BuildStagingTest(unittest.TestCase):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'
+            self.assertTrue((inc / 'usr/share/icons/Colloid/index.theme').exists())
+            self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
+            self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
+            self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
             self.assertIn('Session=plasmax11.desktop', (inc / 'etc/sddm.conf.d/90-yoro-live.conf').read_text())
             modules = (inc / 'etc/initramfs-tools/modules').read_text()
             self.assertIn('hid_hyperv\n', modules)
