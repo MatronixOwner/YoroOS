@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'desktop'))
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 from yoroapps.files import Files
 from yoroapps.notepad import Notepad
@@ -17,6 +18,10 @@ APP = QApplication.instance() or QApplication([])
 APP.setStyleSheet(style.get_stylesheet())
 
 class WidgetTest(unittest.TestCase):
+    def test_svg_icon_theme_is_available(self):
+        QIcon.setThemeName('breeze')
+        self.assertFalse(QIcon.fromTheme('folder').pixmap(32, 32).isNull())
+
     def test_files_navigation_and_views(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td); (root / 'folder').mkdir()

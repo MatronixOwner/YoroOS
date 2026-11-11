@@ -4,6 +4,10 @@
 set -eu
 getent passwd yoro >/dev/null
 test -f /usr/share/xsessions/plasmax11.desktop
+# Provide useful places even when XDG user-dir autostart is absent.
+for dir in Desktop Documents Downloads Pictures Music Videos; do
+    install -d -o yoro -g yoro "/home/yoro/$dir"
+done
 cat > /etc/sddm.conf <<'CONFIG'
 [Autologin]
 User=yoro

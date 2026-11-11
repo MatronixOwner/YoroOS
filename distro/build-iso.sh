@@ -54,6 +54,7 @@ kmod
 # Plasma shell, X11 session and Hyper-V-friendly graphics/input.
 plasma-desktop
 plasma-workspace
+plasma-integration
 kwin-x11
 plasma-nm
 plasma-pa
@@ -66,6 +67,8 @@ xdg-desktop-portal-kde
 sddm
 sddm-theme-breeze
 breeze-icon-theme
+qt6-svg-plugins
+qt6-translations-l10n
 xorg
 xserver-xorg-video-fbdev
 xserver-xorg-input-libinput
