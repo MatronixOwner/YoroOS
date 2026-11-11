@@ -63,12 +63,18 @@ jobs:
             ' 2>&1 | tee build.log
 
       - name: Install QEMU and UEFI firmware for a basic boot test
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf tesseract-ocr
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 ovmf tesseract-ocr xorriso
 
       - name: UEFI live boot smoke test
         run: |
           set -o pipefail
           sudo bash distro/scripts/qemu-live-smoke.sh out/yoroos-desktop-amd64.iso out/uefi-serial.log 2>&1 | sudo tee out/uefi-smoke.log
+
+      - name: Verify Live user and Plasma session
+        run: |
+          set -o pipefail
+          sudo xorriso -osirrox on -indev out/yoroos-desktop-amd64.iso -extract /live out/live
+          sudo python3 distro/scripts/debug-live-login.py out --expect-desktop 2>&1 | sudo tee out/login-debug.txt
 
       - name: Post diagnostics (annotations + commit comment)
         if: always()
@@ -87,6 +93,10 @@ jobs:
               tail -n 50 out/uefi-serial.log || true; echo '```';
               echo; echo 'UEFI smoke diagnostic:'; echo '```';
               cat out/uefi-smoke.log || true; echo '```';
+            fi;
+            if [ -f out/login-debug.txt ]; then
+              echo; echo 'Live session diagnostics:'; echo '```';
+              tail -n 90 out/login-debug.txt || true; echo '```';
             fi; } > comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
             -F body=@comment.md || true
@@ -101,5 +111,6 @@ jobs:
             out/yoroos-desktop-amd64.iso.sha256
             out/uefi-serial.log
             out/uefi-smoke.log
+            out/login-debug.txt
             out/uefi-serial.log.ppm
           if-no-files-found: error

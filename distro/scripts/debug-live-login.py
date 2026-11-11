@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """CI-only investigation of Live user/session. Never ship the debug kernel arg."""
-import os
+import base64
 import select
 import socket
 import subprocess
@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
+expect_desktop = '--expect-desktop' in sys.argv[2:]
 iso = root / 'yoroos-desktop-amd64.iso'
 kernels = list((root / 'live').glob('vmlinuz-*'))
 initrds = list((root / 'live').glob('initrd.img-*'))
@@ -34,14 +35,43 @@ try:
         time.sleep(3)
     else:
         raise RuntimeError('Timed out before graphical target')
-    time.sleep(35)  # SDDM starts asynchronously; allow time for session failure.
+    time.sleep(25)  # SDDM starts asynchronously after the graphical target.
     sock = socket.socket(socket.AF_UNIX)
     sock.connect(str(debug_sock))
     sock.setblocking(False)
-    cmd = """echo YORO_DIAGNOSTIC_BEGIN; date; getent passwd yoro; passwd -S yoro; ls -la /usr/share/xsessions/; for f in /etc/sddm.conf /etc/sddm.conf.d/*; do echo FILE:$f; cat $f 2>/dev/null; done; echo SDDM_JOURNAL; journalctl --no-pager -b -u sddm; echo LIVE_CONFIG; journalctl --no-pager -b -u live-config | tail -80; echo SESSION_LOGS; find /home/yoro -maxdepth 5 -name '*session*log*' -exec cat {} \\; 2>/dev/null; echo PROCESSES; ps ax -o user=,args= | grep -E 'sddm|plasmashell|kwin' | grep -v grep; echo YORO_DIAGNOSTIC_END\n"""
-    sock.sendall(cmd.encode())
+    cmd = r"""
+echo YORO_DIAGNOSTIC_BEGIN
+if getent passwd yoro >/dev/null; then
+    for i in $(seq 1 90); do
+        pgrep -u yoro -x plasmashell >/dev/null && break
+        sleep 2
+    done
+fi
+echo USER_DETAILS
+getent passwd yoro || true
+passwd -S yoro || true
+ls -la /usr/share/xsessions/
+for f in /etc/sddm.conf /etc/sddm.conf.d/*; do echo FILE:$f; cat "$f" 2>/dev/null || true; done
+echo SDDM_JOURNAL
+journalctl --no-pager -b -u sddm || true
+echo LIVE_CONFIG
+journalctl --no-pager -b -u live-config | tail -80
+echo SESSION_LOGS
+find /home/yoro -maxdepth 5 -name '*session*log*' -exec cat {} \; 2>/dev/null || true
+echo PROCESSES
+ps ax -o user=,args= | grep -E 'sddm|plasmashell|kwin' | grep -v grep || true
+if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
+    echo YORO_DESKTOP_RUNNING
+else
+    echo YORO_DESKTOP_NOT_RUNNING
+fi
+echo YORO_DIAGNOSTIC_END
+"""
+    # Base64 prevents the echoed input line from resembling output markers.
+    encoded = base64.b64encode(cmd.encode()).decode()
+    sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
-    until = time.monotonic() + 60
+    until = time.monotonic() + 240
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
         if readable:
@@ -49,11 +79,15 @@ try:
             if not chunk:
                 break
             data += chunk
-            if b'YORO_DIAGNOSTIC_END\r\n' in data:
+            if b'\r\nYORO_DIAGNOSTIC_END\r\n' in data:
                 break
-    print(data.decode('utf-8', 'replace'))
-    if b'YORO_DIAGNOSTIC_END' not in data:
-        raise RuntimeError('Debug shell did not respond')
+    text = data.decode('utf-8', 'replace')
+    print(text)
+    if b'\r\nYORO_DIAGNOSTIC_END\r\n' not in data:
+        raise RuntimeError('Debug shell did not complete diagnosis')
+    if expect_desktop and b'\r\nYORO_DESKTOP_RUNNING\r\n' not in data:
+        raise RuntimeError('The live user or Plasma desktop did not start')
+
 finally:
     qemu.terminate()
     try:

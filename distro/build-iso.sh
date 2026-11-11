@@ -47,6 +47,8 @@ linux-image-amd64
 live-boot
 live-config
 live-config-systemd
+# live-config only recommends this: without it the live user is not created.
+user-setup
 initramfs-tools
 kmod
 # Plasma shell, X11 session and Hyper-V-friendly graphics/input.
