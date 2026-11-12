@@ -56,7 +56,8 @@ plasma-desktop
 plasma-workspace
 plasma-integration
 kwin-x11
-kwin-style-aurorae
+# In trixie Aurorae is in kwin-common, not a separate package.
+kwin-common
 plasma-nm
 plasma-pa
 powerdevil
