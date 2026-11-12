@@ -10,7 +10,7 @@ KDE, Qt и другие необходимые компоненты остают
 
 ### Live-образ для тестирования
 
-[Скачать обновлённый ISO](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-d818c7d29793/yoroos-debian13-live-d818c7d29793-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-d818c7d29793)
+[Скачать обновлённый ISO](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-6d8dd5e9e0dc/yoroos-debian13-live-6d8dd5e9e0dc-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-6d8dd5e9e0dc)
 
 В Hyper-V создайте ВМ **поколения 2**, выделите не менее 4 ГБ ОЗУ,
 подключите ISO к DVD-приводу, поставьте его первым в порядке загрузки и для
