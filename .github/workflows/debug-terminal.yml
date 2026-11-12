@@ -1,0 +1,28 @@
+name: Check Yoro Terminal
+on:
+  push:
+    branches: ['arena/935b4efd-yoroos']
+    paths: ['.github/workflows/debug-terminal.yml', 'desktop/yoroapps/console.py', 'tests/test_terminal.py']
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test terminal
+        run: |
+          set -o pipefail
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work debian:trixie bash -euc '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-gi gir1.2-gtk-3.0 gir1.2-vte-2.91 xvfb xauth fonts-noto-core
+            timeout -k 5 120 xvfb-run -a /usr/bin/python3 -m unittest discover -s tests -p "test_terminal.py" -v
+          ' 2>&1 | tee terminal.log
+      - name: Record test output
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          { echo 'Yoro terminal test'; echo '```'; tail -n 80 terminal.log; echo '```'; } > terminal-comment.md
+          gh api -X POST "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -F body=@terminal-comment.md || true

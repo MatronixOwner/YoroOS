@@ -56,6 +56,7 @@ plasma-desktop
 plasma-workspace
 plasma-integration
 kwin-x11
+kwin-style-aurorae
 plasma-nm
 plasma-pa
 powerdevil
@@ -79,6 +80,9 @@ qdbus-qt6
 # Yoro apps runtime (incl. Matronix Browser engine)
 python3-pyqt6
 python3-pyqt6.qtmultimedia
+python3-gi
+gir1.2-gtk-3.0
+gir1.2-vte-2.91
 # Matronix Browser runtime (author's own browser, PySide6)
 python3-pyside6.qtcore
 python3-pyside6.qtgui
@@ -110,6 +114,23 @@ cp "$REPO_ROOT"/desktop/applications/*.desktop "$INC/usr/share/applications/"
 mkdir -p "$INC/usr/share/icons/hicolor/scalable/apps" "$INC/usr/share/wallpapers/YoroOS" "$INC/etc/xdg/autostart"
 cp "$REPO_ROOT"/desktop/icons/*.svg "$INC/usr/share/icons/hicolor/scalable/apps/"
 cp "$REPO_ROOT"/desktop/wallpapers/*.jpg "$INC/usr/share/wallpapers/YoroOS/"
+# Window decorations and license are included even when external themes are absent.
+mkdir -p "$INC/usr/share/aurorae/themes" "$INC/usr/share/doc/yoroos/themes" "$INC/etc/skel/.config"
+cp -r "$REPO_ROOT/desktop/themes/WhiteSur" "$INC/usr/share/aurorae/themes/"
+cp "$REPO_ROOT/desktop/themes/"{SOURCES.txt,LICENSE-WhiteSur.txt} "$INC/usr/share/doc/yoroos/themes/"
+cat > "$INC/etc/skel/.config/kwinrc" <<'EOKWIN'
+[org.kde.kdecoration2]
+library=org.kde.kwin.aurorae
+theme=__aurorae__svg__WhiteSur
+ButtonsOnLeft=XIA
+ButtonsOnRight=
+[Plugins]
+magiclampEnabled=true
+minimizeanimationEnabled=false
+scaleEnabled=true
+[Effect-magiclamp]
+AnimationDuration=420
+EOKWIN
 cat > "$INC/etc/xdg/autostart/yoro-panel-setup.desktop" <<'EOS'
 [Desktop Entry]
 Type=Application

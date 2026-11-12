@@ -34,6 +34,9 @@ cp "$HERE"/applications/*.desktop "$D/usr/share/applications/"
 install -d "$D/usr/share/icons/hicolor/scalable/apps" "$D/usr/share/wallpapers/YoroOS" "$D/etc/xdg/autostart"
 cp "$HERE"/icons/*.svg "$D/usr/share/icons/hicolor/scalable/apps/"
 cp "$HERE"/wallpapers/*.jpg "$D/usr/share/wallpapers/YoroOS/"
+install -d "$D/usr/share/aurorae/themes" "$D/usr/share/doc/yoroos/themes"
+cp -r "$HERE/themes/WhiteSur" "$D/usr/share/aurorae/themes/"
+cp "$HERE/themes/SOURCES.txt" "$HERE/themes/LICENSE-WhiteSur.txt" "$D/usr/share/doc/yoroos/themes/"
 cat > "$D/etc/xdg/autostart/yoro-panel-setup.desktop" <<'EOF2'
 [Desktop Entry]
 Type=Application
@@ -46,4 +49,4 @@ EOF2
 if [ -z "$D" ] && command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database /usr/share/applications || true
 fi
-echo "Yoro applications installed (need: python3-pyqt6, python3-pyqt6.qtmultimedia, python3-pyside6.* for Matronix Browser)."
+echo "Yoro applications installed (need: python3-pyqt6, python3-pyqt6.qtmultimedia, python3-gi, gir1.2-vte-2.91, python3-pyside6.* for Matronix Browser)."

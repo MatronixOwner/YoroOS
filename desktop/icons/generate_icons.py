@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Generate the YoroOS SVG app icon set (consistent flat style).
 
-Note: matronix-browser.svg is NOT generated here - it is the real
+Note: yoro-logo.svg is custom artwork and is not generated here.
+matronix-browser.svg is NOT generated here - it is the real
 upstream logo copied from MatronixOwner/Matronix_Browser (assets/logo.svg).
 
 Every icon: 64x64, rounded-square tile with a two-stop diagonal
@@ -21,11 +22,6 @@ TILE = (
 )
 
 GLYPHS = {
-    "yoro-logo": ("#3daee9", "#9b59d0",
-        '<path d="M20 16 L32 32 L44 16" fill="none" stroke="#fff" '
-        'stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>'
-        '<path d="M32 32 L32 49" stroke="#fff" stroke-width="6" '
-        'stroke-linecap="round"/>'),
     "yoro-notepad": ("#f5a623", "#e67e22",
         '<path d="M20 12 h16 l8 9 v31 H20 Z" fill="#fff"/>'
         '<path d="M36 12 v9 h8 Z" fill="#ffd9a0"/>'

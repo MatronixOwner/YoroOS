@@ -39,6 +39,14 @@ jobs:
             timeout -k 5 120 /usr/bin/python3 -m unittest discover -s tests -p "test_qt_ui.py" -v
           '
 
+      - name: Test interactive Yoro terminal
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work debian:trixie bash -euc '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-gi gir1.2-gtk-3.0 gir1.2-vte-2.91 xvfb xauth fonts-noto-core
+            timeout -k 5 120 xvfb-run -a /usr/bin/python3 -m unittest discover -s tests -p "test_terminal.py" -v
+          '
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \

@@ -1,0 +1,4 @@
+WhiteSur Aurorae window decoration by Vince Liuice
+https://github.com/vinceliuice/WhiteSur-kde
+Upstream commit cf4df59ce91004f7ea39358b1b8ff917d5c329f7
+License: GPL-3.0; see LICENSE-WhiteSur.txt. Assets are unmodified.

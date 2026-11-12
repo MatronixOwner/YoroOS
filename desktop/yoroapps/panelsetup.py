@@ -23,7 +23,7 @@ LAUNCHERS = [
     "applications:yoro-settings.desktop",
 ]
 
-WALLPAPER = "/usr/share/wallpapers/YoroOS/gradient-aurora.jpg"
+WALLPAPER = "/usr/share/wallpapers/YoroOS/yoro-horizon.jpg"
 
 
 def _qdbus():

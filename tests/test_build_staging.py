@@ -30,7 +30,7 @@ class BuildStagingTest(unittest.TestCase):
             subprocess.run(['bash', str(root / 'distro/build-iso.sh'), str(root / 'out')], env=env, check=True, capture_output=True, text=True)
             work = root / 'distro/work/config'
             packages = (work / 'package-lists/yoro.list.chroot').read_text()
-            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets'):
+            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-style-aurorae', 'python3-gi', 'gir1.2-vte-2.91'):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'
@@ -38,6 +38,12 @@ class BuildStagingTest(unittest.TestCase):
             self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
             self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
+            kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
+            self.assertIn('magiclampEnabled=true', kwin)
+            self.assertIn('minimizeanimationEnabled=false', kwin)
+            self.assertIn('ButtonsOnLeft=XIA', kwin)
+            self.assertTrue((inc / 'usr/share/aurorae/themes/WhiteSur/decoration.svg').exists())
+            self.assertTrue((inc / 'usr/share/wallpapers/YoroOS/yoro-horizon.jpg').exists())
             self.assertIn('Session=plasmax11.desktop', (inc / 'etc/sddm.conf.d/90-yoro-live.conf').read_text())
             hook_live = inc / 'usr/lib/live/config/9999-yoro-sddm'
             self.assertTrue(hook_live.exists())

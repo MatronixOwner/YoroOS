@@ -12,7 +12,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 from yoroapps.files import Files
 from yoroapps.notepad import Notepad
-from yoroapps import calculator, computer, console, media, paint, settings, trashapp, style
+from yoroapps import calculator, computer, media, paint, settings, trashapp, style
 
 APP = QApplication.instance() or QApplication([])
 style.setup_app(APP)
@@ -59,7 +59,7 @@ class WidgetTest(unittest.TestCase):
             w.editor.document().setModified(False); w.close()
 
     def test_all_other_windows_construct(self):
-        for cls in (calculator.Calculator, computer.Computer, console.Console,
+        for cls in (calculator.Calculator, computer.Computer,
                     media.MediaPlayer, paint.Paint, settings.Settings, trashapp.Trash):
             with self.subTest(cls=cls.__name__):
                 w = cls(); w.show(); APP.processEvents(); w.close()

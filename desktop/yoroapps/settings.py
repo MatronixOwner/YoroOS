@@ -89,7 +89,7 @@ class Settings(QMainWindow):
         frame, box = card('Обои', 'Фон применяется к текущему рабочему столу Plasma.')
         row = QHBoxLayout()
         for path in self._find_wallpapers():
-            names = {'gradient-aurora.jpg': 'Аврора', 'gradient-ocean.jpg': 'Океан', 'gradient-sunset.jpg': 'Закат'}
+            names = {'yoro-horizon.jpg': 'Горизонт', 'gradient-aurora.jpg': 'Аврора', 'gradient-ocean.jpg': 'Океан', 'gradient-sunset.jpg': 'Закат'}
             btn = QPushButton(names.get(os.path.basename(path), os.path.basename(path)))
             btn.clicked.connect(lambda _=False, p=path: self._set_wall(p)); row.addWidget(btn)
         box.addLayout(row); v.addWidget(frame); v.addStretch()
