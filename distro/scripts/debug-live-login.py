@@ -84,6 +84,11 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     done
     ls -l /home/yoro/.config/yoroos/panel-setup-done 2>&1 || true
     runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var result=[]; var p=panels(); for (var i=0; i<p.length; ++i) { var w=p[i].widgets(); var names=[]; for(var j=0;j<w.length;++j) names.push(w[j].type); result.push(p[i].location+":"+names.join(",")); } print("YORO_PANELS="+result.join(";"));' 2>&1 || true
+    echo COMPOSITOR_TEST_START
+    for effect in magiclamp scale; do
+        echo "EFFECT:$effect"
+        runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded "$effect" 2>&1 || true
+    done
     echo BROWSER_TEST_START
     pshell=$(pgrep -u yoro -x plasmashell | head -n 1)
     display=$(tr '\0' '\n' < /proc/$pshell/environ | sed -n 's/^DISPLAY=//p' | head -n 1)
@@ -91,6 +96,14 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     display=${display:-:0}
     xauth=${xauth:-/home/yoro/.Xauthority}
     echo "DISPLAY=$display XAUTHORITY=$xauth"
+    printf %s '__TERMINAL_TEST__' | base64 -d > /tmp/yoro-terminal-smoke.py
+    chmod 644 /tmp/yoro-terminal-smoke.py
+    if timeout 90 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-terminal-smoke.py >/tmp/terminal-test.log 2>&1; then
+        cat /tmp/terminal-test.log
+    else
+        cat /tmp/terminal-test.log
+        echo YORO_TERMINAL_FAILED
+    fi
     printf %s '__MATRONIX_TEST__' | base64 -d > /tmp/yoro-matronix-smoke.py
     chmod 644 /tmp/yoro-matronix-smoke.py
     if timeout 110 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-matronix-smoke.py >/tmp/matronix-test.log 2>&1; then
@@ -106,6 +119,8 @@ echo YORO_DIAGNOSTIC_END
 """
     smoke = Path(__file__).with_name('matronix-smoke.py').read_bytes()
     cmd = cmd.replace('__MATRONIX_TEST__', base64.b64encode(smoke).decode())
+    terminal_smoke = Path(__file__).with_name('terminal-smoke.py').read_bytes()
+    cmd = cmd.replace('__TERMINAL_TEST__', base64.b64encode(terminal_smoke).decode())
     # Base64 prevents the echoed input line from resembling output markers.
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
@@ -128,6 +143,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The live user or Plasma desktop did not start')
     if expect_desktop and b'\r\nYORO_LIVE_PASSWORD_VALID\r\n' not in data:
         raise RuntimeError('The expected Live fallback password is not valid')
+    if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
+        raise RuntimeError('Yoro terminal did not start an interactive shell')
     if expect_browser and b'\r\nYORO_BROWSER_OK\r\n' not in data:
         raise RuntimeError('Matronix did not start and render the test page')
 
