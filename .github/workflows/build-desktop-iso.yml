@@ -111,7 +111,7 @@ jobs:
             fi;
             if [ -f out/login-debug.txt ]; then
               echo; echo 'Live session diagnostics:'; echo '```';
-              tail -n 90 out/login-debug.txt || true; echo '```';
+              tail -n 200 out/login-debug.txt || true; echo '```';
             fi; } > comment.md
           gh api -X POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
             -F body=@comment.md || true
@@ -128,4 +128,5 @@ jobs:
             out/uefi-smoke.log
             out/login-debug.txt
             out/uefi-serial.log.ppm
+            out/desktop-screen.ppm
           if-no-files-found: error

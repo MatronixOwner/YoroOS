@@ -19,11 +19,14 @@ if len(kernels) != 1 or len(initrds) != 1:
     raise SystemExit('Expected one kernel and one initrd')
 serial_log = root / 'serial.log'
 debug_sock = root / 'debug.sock'
+monitor_sock = root / 'monitor.sock'
+screenshot = root / 'desktop-screen.ppm'
 qemu = subprocess.Popen([
     'qemu-system-x86_64', '-machine', 'q35', '-accel', 'tcg', '-m', '4096', '-smp', '2',
     '-kernel', str(kernels[0]), '-initrd', str(initrds[0]),
     '-append', 'boot=live components username=yoro hostname=yoroos console=tty0 console=ttyS0,115200n8 systemd.debug_shell=ttyS1',
-    '-cdrom', str(iso), '-boot', 'd', '-display', 'none', '-monitor', 'none',
+    '-cdrom', str(iso), '-boot', 'd', '-display', 'none',
+    '-monitor', 'unix:' + str(monitor_sock) + ',server=on,wait=off',
     '-serial', 'file:' + str(serial_log),
     '-serial', 'unix:' + str(debug_sock) + ',server=on,wait=off', '-no-reboot',
 ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -86,8 +89,13 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var result=[]; var p=panels(); for (var i=0; i<p.length; ++i) { var w=p[i].widgets(); var names=[]; for(var j=0;j<w.length;++j) names.push(w[j].type); result.push(p[i].location+":"+names.join(",")); } print("YORO_PANELS="+result.join(";"));' 2>&1 || true
     echo COMPOSITOR_TEST_START
     dpkg-query -W libgl1-mesa-dri libglx-mesa0 libegl-mesa0 2>&1 || true
-    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /KWin org.kde.KWin.supportInformation 2>&1 || true
-    for effect in magiclamp scale; do
+    echo KWIN_CONFIG
+    cat /home/yoro/.config/kwinrc || true
+    echo KWIN_INFO
+    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /KWin org.kde.KWin.supportInformation 2>&1 | head -70 || true
+    echo KWIN_LOADED_EFFECTS
+    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.loadedEffects 2>&1 || true
+    for effect in magiclamp kwin4_effect_magiclamp scale kwin4_effect_scale; do
         echo "EFFECT:$effect"
         runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded "$effect" 2>&1 || true
     done
@@ -127,6 +135,7 @@ echo YORO_DIAGNOSTIC_END
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
+    captured = False
     until = time.monotonic() + 650
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
@@ -135,6 +144,17 @@ echo YORO_DIAGNOSTIC_END
             if not chunk:
                 break
             data += chunk
+            if not captured and b'\r\nYORO_SCREENSHOT_READY\r\n' in data:
+                captured = True
+                try:
+                    with socket.socket(socket.AF_UNIX) as monitor:
+                        monitor.settimeout(10)
+                        monitor.connect(str(monitor_sock))
+                        monitor.recv(4096)
+                        monitor.sendall(('screendump ' + str(screenshot) + '\n').encode())
+                        time.sleep(3)
+                except OSError as exc:
+                    print('Screenshot failed:', exc, flush=True)
             if b'\r\nYORO_DIAGNOSTIC_END\r\n' in data:
                 break
     text = data.decode('utf-8', 'replace')

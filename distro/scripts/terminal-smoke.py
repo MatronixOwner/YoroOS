@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """CI-only: exercise the installed terminal with a real interactive PTY."""
-import base64
 import sys
 sys.path.insert(0, '/usr/share/yoroos')
-from yoroapps.console import Console, Gtk, GLib, Vte, Gdk
-from gi.repository import GdkPixbuf
+from yoroapps.console import Console, Gtk, GLib, Vte
 
 window = Console(shell='/bin/bash')
 window.show_all()
@@ -23,16 +21,11 @@ def poll():
             return True
         if state['ticks'] < state['visible_at'] + 4:
             return True
-        try:
-            root = Gdk.get_default_root_window()
-            image = Gdk.pixbuf_get_from_window(root, 0, 0, root.get_width(), root.get_height())
-            height = max(1, int(image.get_height() * 720 / image.get_width()))
-            image = image.scale_simple(720, height, GdkPixbuf.InterpType.BILINEAR)
-            success, data = image.save_to_bufferv('jpeg', ['quality'], ['45'])
-            if success and len(data) < 32000:
-                print('YORO_PREVIEW_BASE64=' + base64.b64encode(data).decode(), flush=True)
-        except Exception as exc:
-            print('YORO_PREVIEW_ERROR:', exc, flush=True)
+        if not state.get('announced'):
+            print('YORO_SCREENSHOT_READY', flush=True)
+            state['announced'] = state['ticks']
+        if state['ticks'] < state['announced'] + 16:
+            return True
         state['success'] = True
         print('YORO_TERMINAL_OK', flush=True)
         window.destroy()
