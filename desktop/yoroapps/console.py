@@ -17,6 +17,8 @@ window { background: #111a29; color: #e7edf7; }
 notebook > header { background: #172232; border: 0; }
 notebook > header tab { background: #172232; color: #96a9c2; border: 0; padding: 9px 16px; }
 notebook > header tab:checked { background: #25354a; color: #f5f8ff; box-shadow: inset 0 -2px #7db3ff; }
+.tab-close { min-width: 16px; min-height: 16px; padding: 0; margin-left: 12px; background: transparent; border: 0; color: #a9bad0; box-shadow: none; }
+.tab-close:hover { background: #40516a; color: white; border-radius: 5px; }
 notebook > stack { background: #111a29; }
 terminal { padding: 18px; }
 '''
@@ -81,8 +83,17 @@ class Console(Gtk.Window):
         scroller = Gtk.ScrolledWindow()
         scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroller.add(term)
+        tab = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
         label = Gtk.Label(label=f'Сеанс {self.serial}')
-        self.tabs.append_page(scroller, label)
+        scroller.yoro_tab_title = label
+        close = Gtk.Button(label='×')
+        close.get_style_context().add_class('tab-close')
+        close.set_tooltip_text('Закрыть вкладку · Ctrl+Shift+W')
+        close.connect('clicked', lambda *_: self._close_page(scroller))
+        tab.pack_start(label, True, True, 0)
+        tab.pack_end(close, False, False, 0)
+        tab.show_all()
+        self.tabs.append_page(scroller, tab)
         self.tabs.set_current_page(self.tabs.page_num(scroller))
         scroller.show_all()
         term.grab_focus()
@@ -96,16 +107,22 @@ class Console(Gtk.Window):
             terminal.feed(('Не удалось запустить оболочку: ' + str(error) + '\r\n').encode())
 
     def _child_exited(self, term, _status):
-        page = term.get_parent()
+        self._close_page(term.get_parent())
+
+    def _close_page(self, page):
+        if page is None:
+            return
         index = self.tabs.page_num(page)
-        if index >= 0:
-            self.tabs.remove_page(index)
+        if index < 0:
+            return
+        self.tabs.remove_page(index)
+        page.destroy()  # closes the PTY and sends SIGHUP to its shell
         if self.tabs.get_n_pages() == 0:
             self.destroy()
 
     def _title_changed(self, term):
         page = term.get_parent()
-        label = self.tabs.get_tab_label(page)
+        label = getattr(page, 'yoro_tab_title', None)
         if label:
             name = term.get_window_title() or 'Терминал'
             label.set_text(name[:32])
@@ -126,11 +143,7 @@ class Console(Gtk.Window):
         if key == Gdk.KEY_t:
             self.new_tab()
         elif key == Gdk.KEY_w and page:
-            # Destroying VTE closes the PTY; the shell receives SIGHUP.
-            self.tabs.remove_page(self.tabs.page_num(page))
-            page.destroy()
-            if not self.tabs.get_n_pages():
-                self.destroy()
+            self._close_page(page)
         elif key == Gdk.KEY_c and term:
             term.copy_clipboard_format(Vte.Format.TEXT)
         elif key == Gdk.KEY_v and term:
