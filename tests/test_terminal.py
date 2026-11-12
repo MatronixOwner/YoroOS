@@ -5,7 +5,10 @@ import time
 import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'desktop'))
-from gi.repository import GLib, Gtk
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Vte", "2.91")
+from gi.repository import Gtk, Vte
 from yoroapps.console import Console
 
 
@@ -27,7 +30,7 @@ class TerminalTest(unittest.TestCase):
         self.assertTrue(wait_for(lambda: term.get_pty() is not None), 'No PTY')
         term.feed_child(b"printf 'YORO_PTY_TEST:'; test -t 0 && echo YES\n")
         def contents():
-            return term.get_text(None, None)[0]
+            return term.get_text_format(Vte.Format.TEXT) or ""
         self.assertTrue(wait_for(lambda: 'YORO_PTY_TEST:YES' in contents()), contents())
         second = w.new_tab()
         self.assertEqual(w.tabs.get_n_pages(), 2)
@@ -38,7 +41,7 @@ class TerminalTest(unittest.TestCase):
         term.feed_child(b'sleep 30\n')
         time.sleep(.5)
         term.feed_child(b'\x03')
-        term.feed_child(b"printf 'YORO_AFTER_INTERRUPT\\n'\n")
+        term.feed_child(b"printf YORO_AFTER_; printf INTERRUPT\\n\n")
         self.assertTrue(wait_for(lambda: 'YORO_AFTER_INTERRUPT' in contents()))
         w.destroy()
 
