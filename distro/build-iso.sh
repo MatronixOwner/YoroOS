@@ -123,6 +123,12 @@ cp "$REPO_ROOT"/desktop/wallpapers/*.jpg "$INC/usr/share/wallpapers/YoroOS/"
 mkdir -p "$INC/usr/share/aurorae/themes" "$INC/usr/share/doc/yoroos/themes" "$INC/etc/skel/.config"
 cp -r "$REPO_ROOT/desktop/themes/WhiteSur" "$INC/usr/share/aurorae/themes/"
 cp "$REPO_ROOT/desktop/themes/"{SOURCES.txt,LICENSE-WhiteSur.txt} "$INC/usr/share/doc/yoroos/themes/"
+# KWin normally disables animations on llvmpipe, the common VM renderer.
+# Allow a user-supplied 0 to disable them again on slower machines.
+mkdir -p "$INC/etc/xdg/plasma-workspace/env"
+cat > "$INC/etc/xdg/plasma-workspace/env/yoro-effects.sh" <<'EOENV'
+export KWIN_EFFECTS_FORCE_ANIMATIONS="${KWIN_EFFECTS_FORCE_ANIMATIONS:-1}"
+EOENV
 cat > "$INC/etc/skel/.config/kwinrc" <<'EOKWIN'
 [org.kde.kdecoration2]
 library=org.kde.kwin.aurorae

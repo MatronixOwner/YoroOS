@@ -101,7 +101,7 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.loadedEffects 2>&1 || true
     for effect in magiclamp kwin4_effect_magiclamp scale kwin4_effect_scale; do
         echo "EFFECT:$effect"
-        runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded "$effect" 2>&1 || true
+        runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded "$effect" 2>&1 || true
     done
     echo BROWSER_TEST_START
     pshell=$(pgrep -u yoro -x plasmashell | head -n 1)
@@ -171,6 +171,10 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The expected Live fallback password is not valid')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
+    if expect_desktop:
+        for effect in ('magiclamp', 'scale'):
+            if not re.search(r'EFFECT:' + effect + r'\r?\ntrue\r?\n', text):
+                raise RuntimeError(f'Expected window effect not loaded: {effect}')
     if expect_browser and b'\r\nYORO_BROWSER_OK\r\n' not in data:
         raise RuntimeError('Matronix did not start and render the test page')
 

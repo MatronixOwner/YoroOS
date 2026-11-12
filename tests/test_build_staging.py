@@ -38,6 +38,7 @@ class BuildStagingTest(unittest.TestCase):
             self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
             self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
+            self.assertIn('KWIN_EFFECTS_FORCE_ANIMATIONS', (inc / 'etc/xdg/plasma-workspace/env/yoro-effects.sh').read_text())
             kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
             self.assertIn('magiclampEnabled=true', kwin)
             self.assertIn('minimizeanimationEnabled=false', kwin)
