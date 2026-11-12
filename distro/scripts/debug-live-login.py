@@ -92,7 +92,11 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     echo KWIN_CONFIG
     cat /home/yoro/.config/kwinrc || true
     echo KWIN_INFO
-    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /KWin org.kde.KWin.supportInformation 2>&1 | head -70 || true
+    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /KWin org.kde.KWin.supportInformation 2>&1 || true
+    echo COMPOSITOR_PROPERTIES
+    for prop in active compositingPossible compositingNotPossibleReason compositingType; do echo PROP:$prop; runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Compositor org.kde.kwin.Compositing.$prop 2>&1 || true; done
+    echo XORG_LOG
+    grep -iE 'glx|dri|error|render' /var/log/Xorg.0.log /home/yoro/.local/share/xorg/Xorg.0.log 2>/dev/null || true
     echo KWIN_LOADED_EFFECTS
     runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.loadedEffects 2>&1 || true
     for effect in magiclamp kwin4_effect_magiclamp scale kwin4_effect_scale; do

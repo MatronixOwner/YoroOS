@@ -42,3 +42,5 @@ jobs:
             '
             gh api -X POST "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -F body=@preview-comment.md || true
           fi
+
+# Inspect compositor properties
