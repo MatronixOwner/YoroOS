@@ -9,7 +9,7 @@ from gi.repository import GdkPixbuf
 window = Console(shell='/bin/bash')
 window.show_all()
 terminal = window.tabs.get_nth_page(0).get_child()
-state = {'sent': False, 'ticks': 0, 'success': False}
+state = {'sent': False, 'ticks': 0, 'success': False, 'visible_at': None}
 
 def poll():
     state['ticks'] += 1
@@ -18,6 +18,11 @@ def poll():
         terminal.feed_child(b"printf 'YORO_'; printf 'TERMINAL_OK\\n'\n")
     text = terminal.get_text_format(Vte.Format.TEXT) or ''
     if 'YORO_TERMINAL_OK' in text:
+        if state['visible_at'] is None:
+            state['visible_at'] = state['ticks']
+            return True
+        if state['ticks'] < state['visible_at'] + 4:
+            return True
         try:
             root = Gdk.get_default_root_window()
             image = Gdk.pixbuf_get_from_window(root, 0, 0, root.get_width(), root.get_height())

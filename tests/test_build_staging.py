@@ -30,7 +30,7 @@ class BuildStagingTest(unittest.TestCase):
             subprocess.run(['bash', str(root / 'distro/build-iso.sh'), str(root / 'out')], env=env, check=True, capture_output=True, text=True)
             work = root / 'distro/work/config'
             packages = (work / 'package-lists/yoro.list.chroot').read_text()
-            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'python3-gi', 'gir1.2-vte-2.91'):
+            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'libgl1-mesa-dri', 'libglx-mesa0', 'libegl-mesa0', 'python3-gi', 'gir1.2-vte-2.91'):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'

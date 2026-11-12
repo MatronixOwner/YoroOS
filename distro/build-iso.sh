@@ -72,6 +72,10 @@ breeze-icon-theme
 qt6-svg-plugins
 qt6-translations-l10n
 xorg
+# Mesa software rendering keeps compositing available on Hyper-V without 3D.
+libgl1-mesa-dri
+libglx-mesa0
+libegl-mesa0
 xserver-xorg-video-fbdev
 xserver-xorg-input-libinput
 dbus-x11

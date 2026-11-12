@@ -85,6 +85,8 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     ls -l /home/yoro/.config/yoroos/panel-setup-done 2>&1 || true
     runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var result=[]; var p=panels(); for (var i=0; i<p.length; ++i) { var w=p[i].widgets(); var names=[]; for(var j=0;j<w.length;++j) names.push(w[j].type); result.push(p[i].location+":"+names.join(",")); } print("YORO_PANELS="+result.join(";"));' 2>&1 || true
     echo COMPOSITOR_TEST_START
+    dpkg-query -W libgl1-mesa-dri libglx-mesa0 libegl-mesa0 2>&1 || true
+    runuser -u yoro -- env LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /KWin org.kde.KWin.supportInformation 2>&1 || true
     for effect in magiclamp scale; do
         echo "EFFECT:$effect"
         runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded "$effect" 2>&1 || true
