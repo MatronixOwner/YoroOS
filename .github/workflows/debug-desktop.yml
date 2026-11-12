@@ -1,0 +1,44 @@
+name: Inspect composed desktop
+on:
+  push:
+    branches: ['arena/935b4efd-yoroos']
+    paths: ['.github/workflows/debug-desktop.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          run-id: '43217928955'
+          github-token: ${{ github.token }}
+          path: out
+      - name: Inspect desktop
+        run: |
+          set -o pipefail
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work debian:trixie bash -euc '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends qemu-system-x86 ovmf xorriso python3
+            xorriso -osirrox on -indev out/yoroos-desktop-amd64.iso -extract /live out/live
+            python3 distro/scripts/debug-live-login.py out --expect-desktop --expect-browser
+          ' 2>&1 | tee inspect.log
+      - name: Report effect and screenshot
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          { echo 'Desktop inspection'; echo '```'; sed -n '/COMPOSITOR_TEST_START/,/BROWSER_TEST_START/p' inspect.log; echo '```'; } > inspect-comment.md
+          gh api -X POST "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -F body=@inspect-comment.md || true
+          if [ -f out/desktop-screen.ppm ]; then
+            docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work debian:trixie bash -euc '
+              apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-pil
+              python3 -c "from PIL import Image; import base64,pathlib; i=Image.open(\"out/desktop-screen.ppm\"); i.thumbnail((900,600)); i.save(\"out/desktop.jpg\", quality=55); b=pathlib.Path(\"out/desktop.jpg\").read_bytes(); assert len(b)<45000; pathlib.Path(\"preview-comment.md\").write_text(\"Composed desktop preview\\n\`\`\`base64\\n\"+base64.b64encode(b).decode()+\"\\n\`\`\`\")"
+            '
+            gh api -X POST "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -F body=@preview-comment.md || true
+          fi
