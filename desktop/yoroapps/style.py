@@ -130,7 +130,7 @@ QProgressBar::chunk {{ background: {accent}; border-radius: 5px; }}
             sheet = sheet.replace(old, new)
     if glass:
         dark = (mode or load_mode()) == 'dark'
-        surface = 'rgba(22, 33, 48, 195)' if dark else 'rgba(240, 248, 255, 178)'
+        surface = 'rgba(22, 33, 48, 220)' if dark else 'rgba(240, 248, 255, 215)'
         sidebar = 'rgba(32, 48, 66, 125)' if dark else 'rgba(215, 232, 249, 105)'
         toolbar = 'rgba(30, 43, 60, 125)' if dark else 'rgba(237, 247, 255, 110)'
         opaque = '#17202d' if dark else '#f8f9fb'
@@ -142,9 +142,11 @@ QProgressBar::chunk {{ background: {accent}; border-radius: 5px; }}
             f'QWidget#sidebar {{ background-color: {sidebar};')
         sheet = sheet.replace(f'QWidget#toolbar {{ background-color: {tool_opaque};',
             f'QWidget#toolbar {{ background-color: {toolbar};')
-        pane = 'rgba(31, 45, 63, 175)' if dark else 'rgba(250, 253, 255, 175)'
+        pane = 'rgba(31, 45, 63, 185)' if dark else 'rgba(250, 253, 255, 175)'
         sheet += f'\nQTreeView, QListView, QListWidget {{ background-color: {pane}; }}\n'
         sheet += '\nQListWidget#places { background: transparent; }\n'
+        if not dark:
+            sheet += '\nQLabel#subtitle, QLabel#section { color: #4d5d72; }\n'
     return sheet
 
 

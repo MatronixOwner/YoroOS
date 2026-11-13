@@ -13,6 +13,7 @@ app = QApplication(sys.argv)
 style.setup_app(app)
 app.setStyleSheet(style.get_stylesheet())
 window = Files(os.path.expanduser('~'))
+window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
 if not style.enable_glass(app, window):
     raise SystemExit('glass surface unavailable')
 if not window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground):
@@ -35,6 +36,6 @@ if data: x.XFree(data)
 x.XCloseDisplay(d)
 if status != 0 or type_.value != 6 or fmt.value != 32:
     raise SystemExit('KWin blur property missing')
-print('MATRO_GLASS_SCREENSHOT_READY', flush=True)
-QTimer.singleShot(8000, lambda: (print('MATRO_GLASS_OK', flush=True), app.quit()))
+QTimer.singleShot(2500, lambda: print('MATRO_GLASS_SCREENSHOT_READY', flush=True))
+QTimer.singleShot(10500, lambda: (print('MATRO_GLASS_OK', flush=True), app.quit()))
 sys.exit(app.exec())
