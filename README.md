@@ -10,7 +10,7 @@ KDE, Qt и другие необходимые компоненты остают
 
 ### Live-образ для тестирования
 
-[Скачать предыдущий ISO YoroOS](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-b262433/yoroos-debian13-live-b262433-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-b262433)
+[Скачать MatroOS Live с Kora](https://github.com/MatronixOwner/YoroOS/releases/download/matroos-live-255fddb99c7c/matroos-live-255fddb99c7c-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/matroos-live-255fddb99c7c)
 
 В Hyper-V создайте ВМ **поколения 2**, выделите не менее 4 ГБ ОЗУ,
 подключите ISO к DVD-приводу, поставьте его первым в порядке загрузки и для
