@@ -10,7 +10,7 @@ KDE, Qt и другие необходимые компоненты остают
 
 ### Live-образ для тестирования
 
-[Скачать обновлённый ISO](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-6d8dd5e9e0dc/yoroos-debian13-live-6d8dd5e9e0dc-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-6d8dd5e9e0dc)
+[Скачать обновлённый ISO](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-117628e168a6/yoroos-debian13-live-117628e168a6-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-117628e168a6)
 
 В Hyper-V создайте ВМ **поколения 2**, выделите не менее 4 ГБ ОЗУ,
 подключите ISO к DVD-приводу, поставьте его первым в порядке загрузки и для
@@ -19,7 +19,9 @@ KDE, Qt и другие необходимые компоненты остают
 `yoro`, пароль `live`. Данные после выключения не сохраняются.
 
 UEFI, Live-сессия и отображение тестовой страницы Matronix проверены в QEMU;
-конкретно этот образ ещё не проверен в Hyper-V. Экспериментальное нативное ядро
+конкретно этот образ ещё не проверен в Hyper-V. На первом входе показывается
+экран приветствия. Голосовой MP3 в образ не включён; подробности и импорт —
+[приветствие YoroOS](docs/welcome-audio.md). Экспериментальное нативное ядро
 и YoroFS в Live-образ не встроены.
 
 Нативное ядро и его отдельный экспериментальный ISO сохранены в репозитории;
