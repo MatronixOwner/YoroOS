@@ -5,7 +5,7 @@ on:
     paths: ['.github/workflows/inspect-matro-glass.yml']
 permissions:
   actions: read
-  contents: read
+  contents: write
 jobs:
   inspect:
     runs-on: ubuntu-24.04
@@ -21,3 +21,21 @@ jobs:
           name: glass-preview
           path: checked/glass-screen.ppm
           if-no-files-found: error
+      - name: Export preview as Git blob
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet --user pillow
+          python3 - <<'PYIMAGE'
+          from PIL import Image
+          import base64, json
+          from io import BytesIO
+          img = Image.open('checked/glass-screen.ppm')
+          img.thumbnail((1000, 700))
+          out = BytesIO(); img.convert('RGB').save(out, format='JPEG', quality=78, optimize=True)
+          with open('blob.json', 'w') as f:
+              json.dump({'content': base64.b64encode(out.getvalue()).decode(), 'encoding': 'base64'}, f)
+          PYIMAGE
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/git/blobs" --method POST --input blob.json --jq .sha)
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" --method POST -f body="glass-preview-blob:$sha"
