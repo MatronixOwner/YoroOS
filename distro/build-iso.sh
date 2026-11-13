@@ -119,6 +119,11 @@ cp "$REPO_ROOT"/desktop/applications/*.desktop "$INC/usr/share/applications/"
 mkdir -p "$INC/usr/share/icons/hicolor/scalable/apps" "$INC/usr/share/wallpapers/YoroOS" "$INC/etc/xdg/autostart"
 cp "$REPO_ROOT"/desktop/icons/*.svg "$INC/usr/share/icons/hicolor/scalable/apps/"
 cp "$REPO_ROOT"/desktop/wallpapers/*.jpg "$INC/usr/share/wallpapers/YoroOS/"
+# Optional, separately licensed recording. Never download voices at build/login.
+if [ -f "$REPO_ROOT/desktop/sounds/welcome.mp3" ]; then
+    mkdir -p "$INC/usr/share/yoroos/sounds"
+    cp "$REPO_ROOT/desktop/sounds/welcome.mp3" "$INC/usr/share/yoroos/sounds/welcome.mp3"
+fi
 # Window decorations and license are included even when external themes are absent.
 mkdir -p "$INC/usr/share/aurorae/themes" "$INC/usr/share/doc/yoroos/themes" "$INC/etc/skel/.config"
 cp -r "$REPO_ROOT/desktop/themes/WhiteSur" "$INC/usr/share/aurorae/themes/"
@@ -152,10 +157,20 @@ X-KDE-autostart-phase=2
 NoDisplay=true
 EOS
 
+cat > "$INC/etc/xdg/autostart/yoro-welcome.desktop" <<'EOS'
+[Desktop Entry]
+Type=Application
+Name=Yoro Welcome
+Exec=yoro-welcome
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true
+EOS
+
 for pair in notepad:yoro-notepad files:yoro-files media:yoro-media \
         settings:yoro-settings console:yoro-console computer:yoro-computer \
         trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint \
-        panelsetup:yoro-panel-setup; do
+        panelsetup:yoro-panel-setup welcome:yoro-welcome; do
     app="${pair%%:*}"; bin="${pair##*:}"
     cat > "$INC/usr/local/bin/$bin" <<EOF
 #!/bin/sh

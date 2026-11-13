@@ -39,6 +39,8 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
             self.assertIn('KWIN_EFFECTS_FORCE_ANIMATIONS', (inc / 'etc/xdg/plasma-workspace/env/yoro-effects.sh').read_text())
+            self.assertIn('Exec=yoro-welcome', (inc / 'etc/xdg/autostart/yoro-welcome.desktop').read_text())
+            self.assertTrue((inc / 'usr/local/bin/yoro-welcome').exists())
             kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
             self.assertIn('magiclampEnabled=true', kwin)
             self.assertIn('minimizeanimationEnabled=false', kwin)

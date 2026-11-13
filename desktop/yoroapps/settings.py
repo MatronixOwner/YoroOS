@@ -4,11 +4,12 @@ import platform
 import shutil
 import sys
 
-from PyQt6.QtCore import QProcess, Qt
-from PyQt6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
-    QListWidget, QMainWindow, QMessageBox, QPushButton, QSlider,
+from PyQt6.QtCore import QProcess, Qt, QUrl
+from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout, QLabel,
+    QListWidget, QMainWindow, QMessageBox, QPushButton, QScrollArea, QSlider,
     QStackedWidget, QVBoxLayout, QWidget)
-from yoroapps import panelsetup, style
+from yoroapps import panelsetup, style, welcome_state
 
 ACCENTS = [("Синий", "#3478f6"), ("Бирюзовый", "#168e97"),
            ("Фиолетовый", "#8260c8"), ("Розовый", "#c44d80"),
@@ -38,7 +39,6 @@ def heading(title, subtitle):
 def card(title, detail):
     frame = QFrame()
     frame.setObjectName('settingsCard')
-    frame.setStyleSheet('QFrame#settingsCard {background: white; border: 1px solid #e0e5ec; border-radius: 12px;}')
     layout = QVBoxLayout(frame)
     layout.setContentsMargins(18, 15, 18, 15)
     name = QLabel(title); name.setStyleSheet('font-weight: 600; font-size: 11pt;')
@@ -50,22 +50,36 @@ def card(title, detail):
 class Settings(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Настройки")
+        self.setWindowTitle("Настройки YoroOS")
+        self.audio = QAudioOutput(self); self.audio.setVolume(0.75)
+        self.player = QMediaPlayer(self); self.player.setAudioOutput(self.audio)
+        self.player.errorOccurred.connect(self._audio_error)
         self.resize(860, 610)
         self.setMinimumSize(650, 470)
         nav = QListWidget()
         nav.setObjectName('places')
-        nav.addItems(['Внешний вид', 'Рабочий стол', 'Система', 'О системе'])
+        nav.addItems(['Внешний вид', 'Рабочий стол', 'Приветствие', 'Система', 'О системе'])
         nav.setFixedWidth(190)
         self.pages = QStackedWidget()
         self.pages.addWidget(self._appearance_page())
         self.pages.addWidget(self._desktop_page())
+        self.pages.addWidget(self._welcome_page())
         self.pages.addWidget(self._system_page())
         self.pages.addWidget(self._about_page())
+        # Keep all controls reachable on small VM displays and at high scaling.
+        for index in range(self.pages.count()):
+            child = self.pages.widget(index)
+            self.pages.removeWidget(child)
+            scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+            scroll.setWidget(child); self.pages.insertWidget(index, scroll)
         nav.currentRowChanged.connect(self.pages.setCurrentIndex)
         nav.setCurrentRow(0)
         sidebar = QWidget(); sidebar.setObjectName('sidebar')
-        side = QVBoxLayout(sidebar); side.setContentsMargins(8, 20, 8, 8); side.addWidget(nav)
+        side = QVBoxLayout(sidebar); side.setContentsMargins(14, 22, 14, 14)
+        brand = QLabel('YoroOS'); brand.setObjectName('title')
+        brand_subtitle = QLabel('ЦЕНТР НАСТРОЕК'); brand_subtitle.setObjectName('section')
+        side.addWidget(brand); side.addWidget(brand_subtitle); side.addSpacing(16); side.addWidget(nav)
+        foot = QLabel('Создано для вас'); foot.setObjectName('subtitle'); side.addWidget(foot)
         layout = QHBoxLayout(); layout.setContentsMargins(0, 0, 0, 0); layout.setSpacing(0)
         layout.addWidget(sidebar); layout.addWidget(self.pages, 1)
         root = QWidget(); root.setLayout(layout); self.setCentralWidget(root)
@@ -78,6 +92,11 @@ class Settings(QMainWindow):
 
     def _appearance_page(self):
         page, v = self._page('Внешний вид', 'Настройте цвет и фон рабочего стола.')
+        frame, box = card('Тема приложений Yoro', 'Применяется к приложениям Yoro при их следующем запуске; тема Plasma и Matronix не меняется.')
+        row = QHBoxLayout()
+        for label, mode in (('Светлая', 'light'), ('Тёмная', 'dark')):
+            btn = QPushButton(label); btn.clicked.connect(lambda _=False, m=mode: self._set_mode(m)); row.addWidget(btn)
+        box.addLayout(row); v.addWidget(frame)
         frame, box = card('Акцент', 'Цвет элементов в приложениях Yoro. Изменение применяется при следующем запуске других приложений.')
         row = QHBoxLayout()
         for name, color in ACCENTS:
@@ -109,6 +128,14 @@ class Settings(QMainWindow):
         except OSError as exc:
             QMessageBox.warning(self, 'Оформление', str(exc))
 
+    def _set_mode(self, mode):
+        try:
+            style.save_mode(mode)
+            QApplication.instance().setStyleSheet(style.get_stylesheet())
+            self.statusBar().showMessage('Тема сохранена', 3000)
+        except OSError as exc:
+            QMessageBox.warning(self, 'Оформление', str(exc))
+
     def _set_wall(self, path):
         if not panelsetup.set_wallpaper(path):
             QMessageBox.warning(self, 'Обои', 'Не удалось изменить фон рабочего стола.')
@@ -132,6 +159,60 @@ class Settings(QMainWindow):
             self.statusBar().showMessage('Панель обновлена', 3000)
         else:
             QMessageBox.warning(self, 'Панель', 'Не удалось изменить панель Plasma.')
+
+    def _welcome_page(self):
+        page, v = self._page('Приветствие', 'Фирменное приветствие при первом входе в сессию.')
+        frame, box = card('Голос', 'Загрузите MP3, на использование которого у вас есть права. При первом входе файл прозвучит без подключения к сети.')
+        self.voice_status = QLabel(); self.voice_status.setObjectName('subtitle'); self.voice_status.setWordWrap(True)
+        box.addWidget(self.voice_status)
+        self.voice_enabled = QCheckBox('Воспроизводить при первом входе')
+        self.voice_enabled.setChecked(style.load_preferences().get('welcome_audio', True) is not False)
+        self.voice_enabled.toggled.connect(self._set_welcome_audio)
+        box.addWidget(self.voice_enabled)
+        row = QHBoxLayout()
+        choose = QPushButton('Выбрать MP3…'); choose.clicked.connect(self._choose_voice)
+        play = QPushButton('Прослушать'); play.clicked.connect(self._play_voice)
+        row.addWidget(choose); row.addWidget(play); box.addLayout(row)
+        show = QPushButton('Показать экран приветствия'); show.clicked.connect(lambda: QProcess.startDetached('yoro-welcome', ['--show']))
+        box.addWidget(show)
+        v.addWidget(frame)
+        note = QLabel('В Live-образе настройки и загруженный файл удаляются после выключения. Само приветствие появится снова при следующей загрузке.')
+        note.setObjectName('subtitle'); note.setWordWrap(True); v.addWidget(note); v.addStretch()
+        self._update_voice_status()
+        return page
+
+    def _update_voice_status(self):
+        self.voice_status.setText('Файл приветствия подключён.' if welcome_state.sound_path() else 'Голосовой файл пока не добавлен.')
+
+    def _set_welcome_audio(self, enabled):
+        try:
+            style.save_preferences(welcome_audio=enabled)
+        except OSError as exc:
+            QMessageBox.warning(self, 'Приветствие', str(exc))
+
+    def _choose_voice(self):
+        path, _ = QFileDialog.getOpenFileName(self, 'Выберите приветствие', os.path.expanduser('~'), 'MP3 (*.mp3 *.MP3)')
+        if not path:
+            return
+        try:
+            self.player.stop()
+            welcome_state.import_sound(path)
+            self._update_voice_status()
+            self.statusBar().showMessage('Приветствие добавлено', 3000)
+        except (OSError, ValueError) as exc:
+            QMessageBox.warning(self, 'Приветствие', str(exc))
+
+    def _play_voice(self):
+        path = welcome_state.sound_path()
+        if not path:
+            QMessageBox.information(self, 'Приветствие', 'Сначала выберите MP3-файл.')
+            return
+        self.player.stop()
+        self.player.setSource(QUrl.fromLocalFile(str(path)))
+        self.player.play()
+
+    def _audio_error(self, _error, message):
+        self.statusBar().showMessage('Ошибка воспроизведения: ' + message, 8000)
 
     def _system_page(self):
         page, v = self._page('Система', 'Откройте встроенные настройки оборудования и сети.')

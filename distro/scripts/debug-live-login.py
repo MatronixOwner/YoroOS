@@ -87,6 +87,16 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     done
     ls -l /home/yoro/.config/yoroos/panel-setup-done 2>&1 || true
     runuser -u yoro -- env XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/lib/qt6/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var result=[]; var p=panels(); for (var i=0; i<p.length; ++i) { var w=p[i].widgets(); var names=[]; for(var j=0;j<w.length;++j) names.push(w[j].type); result.push(p[i].location+":"+names.join(",")); } print("YORO_PANELS="+result.join(";"));' 2>&1 || true
+    echo WELCOME_TEST_START
+    for i in $(seq 1 30); do
+        [ -f /home/yoro/.config/yoroos/welcome-seen ] && pgrep -u yoro -f 'python3 -m yoroapps.welcome' >/dev/null && break
+        sleep 2
+    done
+    if [ -f /home/yoro/.config/yoroos/welcome-seen ] && pgrep -u yoro -f 'python3 -m yoroapps.welcome' >/dev/null; then
+        echo YORO_WELCOME_OK
+    else
+        echo YORO_WELCOME_FAILED
+    fi
     echo COMPOSITOR_TEST_START
     dpkg-query -W libgl1-mesa-dri libglx-mesa0 libegl-mesa0 2>&1 || true
     echo KWIN_CONFIG
@@ -169,6 +179,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The live user or Plasma desktop did not start')
     if expect_desktop and b'\r\nYORO_LIVE_PASSWORD_VALID\r\n' not in data:
         raise RuntimeError('The expected Live fallback password is not valid')
+    if expect_desktop and b'\r\nYORO_WELCOME_OK\r\n' not in data:
+        raise RuntimeError('Yoro welcome did not appear on first login')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
     if expect_desktop:

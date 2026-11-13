@@ -12,7 +12,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 from yoroapps.files import Files
 from yoroapps.notepad import Notepad
-from yoroapps import calculator, computer, media, paint, settings, trashapp, style
+from yoroapps import calculator, computer, media, paint, settings, trashapp, style, welcome, welcome_state
 
 APP = QApplication.instance() or QApplication([])
 style.setup_app(APP)
@@ -57,6 +57,28 @@ class WidgetTest(unittest.TestCase):
             self.assertTrue(w.editor.document().isModified())
             self.assertEqual(w.path, str(Path(td) / 'hello.txt'))
             w.editor.document().setModified(False); w.close()
+
+    def test_settings_and_welcome_voice_controls(self):
+        with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, {'XDG_CONFIG_HOME': td + '/config', 'XDG_DATA_HOME': td + '/data'}):
+            w = settings.Settings(); w.show(); APP.processEvents()
+            w._set_mode('dark'); w._set_accent('#168e97')
+            self.assertEqual(style.load_mode(), 'dark')
+            self.assertEqual(style.load_accent(), '#168e97')
+            w._set_welcome_audio(False)
+            self.assertFalse(style.load_preferences()['welcome_audio'])
+            self.assertEqual(style.load_mode(), 'dark')
+            w.pages.setCurrentIndex(2)
+            self.assertIn('не добавлен', w.voice_status.text())
+            src = Path(td) / 'voice.mp3'; src.write_bytes(b'test recording')
+            welcome_state.import_sound(src); w._update_voice_status()
+            self.assertIn('подключён', w.voice_status.text())
+            screen = welcome.Welcome(); screen.show(); APP.processEvents()
+            # Disabled voice must not set a source, even if a file exists.
+            screen.play_welcome(); self.assertTrue(screen.player.source().isEmpty())
+            style.save_preferences(welcome_audio=True)
+            screen.play_welcome(); self.assertEqual(screen.player.source().toLocalFile(), str(welcome_state.sound_path()))
+            screen.close(); w.close()
+        APP.setStyleSheet(style.get_stylesheet())
 
     def test_all_other_windows_construct(self):
         for cls in (calculator.Calculator, computer.Computer,
