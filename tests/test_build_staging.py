@@ -23,7 +23,7 @@ class BuildStagingTest(unittest.TestCase):
             linox = themes / 'linox'
             for name in ('Linox', 'Linox-Blue'):
                 (linox / name / 'scalable/apps').mkdir(parents=True)
-                (linox / name / 'index.theme').write_text('[Icon Theme]\nName=' + name + '\nInherits=Adwaita,hicolor\n')
+                (linox / name / 'index.theme').write_text('[Icon Theme]\nName=' + name + '\nInherits=' + ('Linox,Adwaita,hicolor' if name == 'Linox-Blue' else 'Adwaita,hicolor') + '\n')
             for name in ('file-manager', 'terminal', 'accessories-text-editor', 'preferences-system',
                          'calc', 'smplayer', 'gnome-paint', 'preferences-desktop-display'):
                 (linox / 'Linox/scalable/apps' / (name + '.svg')).write_text('<svg/>')
@@ -44,7 +44,7 @@ class BuildStagingTest(unittest.TestCase):
             inc = work / 'includes.chroot'
             self.assertTrue((inc / 'usr/share/icons/Linox/index.theme').exists())
             self.assertTrue((inc / 'usr/share/icons/Linox-Blue/scalable/apps/yoro-console.svg').exists())
-            self.assertIn('Inherits=breeze,', (inc / 'usr/share/icons/Linox-Blue/index.theme').read_text())
+            self.assertIn('Inherits=Linox,breeze,', (inc / 'usr/share/icons/Linox-Blue/index.theme').read_text())
             self.assertTrue((inc / 'usr/share/doc/yoroos/themes/linox-license.txt').exists())
             self.assertTrue((inc / 'usr/share/plymouth/themes/yoro/yoro.script').exists())
             self.assertIn('Theme=yoro', (inc / 'etc/plymouth/plymouthd.conf').read_text())
