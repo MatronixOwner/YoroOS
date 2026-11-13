@@ -68,13 +68,13 @@ def setup_app(app):
             paths.append(path)
     QIcon.setThemeSearchPaths(paths)
     if not QIcon.themeName():
-        if os.path.exists('/usr/share/icons/Linox-Blue/index.theme'):
-            QIcon.setThemeName('Linox-Blue')
+        if os.path.exists('/usr/share/icons/kora/index.theme'):
+            QIcon.setThemeName('kora')
         elif os.path.exists('/usr/share/icons/breeze/index.theme'):
             QIcon.setThemeName('breeze')
 
 
-def get_stylesheet(accent=None, mode=None):
+def get_stylesheet(accent=None, mode=None, glass=False):
     accent = accent if isinstance(accent, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", accent) else load_accent()
     sheet = f"""
 * {{ font-family: "Noto Sans", sans-serif; font-size: 10pt; color: #222733; }}
@@ -128,4 +128,71 @@ QProgressBar::chunk {{ background: {accent}; border-radius: 5px; }}
         }
         for old, new in palette.items():
             sheet = sheet.replace(old, new)
+    if glass:
+        dark = (mode or load_mode()) == 'dark'
+        surface = 'rgba(22, 33, 48, 195)' if dark else 'rgba(240, 248, 255, 178)'
+        sidebar = 'rgba(32, 48, 66, 125)' if dark else 'rgba(215, 232, 249, 105)'
+        toolbar = 'rgba(30, 43, 60, 125)' if dark else 'rgba(237, 247, 255, 110)'
+        opaque = '#17202d' if dark else '#f8f9fb'
+        side_opaque = '#1d2939' if dark else '#edf0f5'
+        tool_opaque = '#202c3c' if dark else '#f5f6f9'
+        sheet = sheet.replace(f'QMainWindow, QWidget {{ background-color: {opaque}; }}',
+            f'QWidget {{ background: transparent; }} QMainWindow, QWidget#glassWindow {{ background-color: {surface}; }}')
+        sheet = sheet.replace(f'QWidget#sidebar {{ background-color: {side_opaque};',
+            f'QWidget#sidebar {{ background-color: {sidebar};')
+        sheet = sheet.replace(f'QWidget#toolbar {{ background-color: {tool_opaque};',
+            f'QWidget#toolbar {{ background-color: {toolbar};')
+        pane = 'rgba(31, 45, 63, 175)' if dark else 'rgba(250, 253, 255, 175)'
+        sheet += f'\nQTreeView, QListView, QListWidget {{ background-color: {pane}; }}\n'
+        sheet += '\nQListWidget#places { background: transparent; }\n'
     return sheet
+
+
+def enable_glass(app, window):
+    """Request a blurred ARGB client surface on composited X11; otherwise stay opaque.
+
+    The X11 property is KWin's documented full-window blur request. This does
+    not affect the opacity of text or widgets and doesn't change foreign apps.
+    """
+    from PyQt6.QtCore import Qt
+    if app.platformName() != 'xcb':
+        return False
+    import ctypes
+    try:
+        x = ctypes.CDLL('libX11.so.6')
+        x.XOpenDisplay.argtypes = [ctypes.c_char_p]
+        x.XOpenDisplay.restype = ctypes.c_void_p
+        x.XDefaultScreen.argtypes = [ctypes.c_void_p]
+        x.XDefaultScreen.restype = ctypes.c_int
+        x.XInternAtom.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+        x.XInternAtom.restype = ctypes.c_ulong
+        x.XGetSelectionOwner.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+        x.XGetSelectionOwner.restype = ctypes.c_ulong
+        x.XChangeProperty.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong,
+                                      ctypes.c_ulong, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_void_p, ctypes.c_int]
+        x.XFlush.argtypes = [ctypes.c_void_p]
+        x.XCloseDisplay.argtypes = [ctypes.c_void_p]
+        display = x.XOpenDisplay(None)
+        if not display:
+            return False
+        try:
+            screen = x.XDefaultScreen(display)
+            selection = x.XInternAtom(display, f'_NET_WM_CM_S{screen}'.encode(), False)
+            if not x.XGetSelectionOwner(display, selection):
+                return False
+            window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+            window.setObjectName('glassWindow')
+            wid = int(window.winId())
+            app.sync()  # Make Qt's XCB window visible to our Xlib connection.
+            atom = x.XInternAtom(display, b'_KDE_NET_WM_BLUR_BEHIND_REGION', False)
+            # Empty CARDINAL array means blur the entire client region.
+            x.XChangeProperty(display, wid, atom, 6, 32, 0, None, 0)
+            x.XFlush(display)
+            app.setProperty('matroGlass', True)
+            app.setStyleSheet(get_stylesheet(glass=True))
+            return True
+        finally:
+            x.XCloseDisplay(display)
+    except (OSError, AttributeError):
+        return False

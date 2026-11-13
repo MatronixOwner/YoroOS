@@ -105,6 +105,7 @@ def main():
     style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Trash()
+    style.enable_glass(app, window)
     window.show()
     sys.exit(app.exec())
 

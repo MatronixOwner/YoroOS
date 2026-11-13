@@ -1,7 +1,11 @@
 """Structural guarantees for the Yoro Arc Aurorae controls."""
 import unittest
 import xml.etree.ElementTree as ET
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'desktop'))
+from yoroapps import style
 
 THEME = Path(__file__).resolve().parents[1] / 'desktop/themes/YoroArc'
 
@@ -35,6 +39,14 @@ class WindowThemeTest(unittest.TestCase):
         for piece in ('center', 'top', 'topleft', 'topright', 'left', 'right',
                       'bottom', 'bottomleft', 'bottomright'):
             self.assertIn('mask-' + piece, nodes)
+
+    def test_application_glass_does_not_fade_text(self):
+        for mode in ('light', 'dark'):
+            sheet = style.get_stylesheet(mode=mode, glass=True)
+            self.assertIn('QWidget#glassWindow', sheet)
+            self.assertIn('rgba(', sheet)
+            self.assertNotIn('windowOpacity', sheet)
+        self.assertNotIn('QWidget#glassWindow', style.get_stylesheet(mode='light'))
 
     def test_metadata_and_frame_exist(self):
         self.assertTrue((THEME / 'decoration.svg').is_file())

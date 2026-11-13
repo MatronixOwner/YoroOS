@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout,
     QMainWindow, QMenu, QMessageBox, QSplitter, QStackedWidget, QToolButton,
     QTreeView, QVBoxLayout, QWidget)
 
-from yoroapps import fileops, style, trashutil
+from yoroapps import fileops, launch, style, trashutil
 
 PLACES = [
     ("Домой", "user-home", "~"),
@@ -168,6 +168,26 @@ class Files(QMainWindow):
         self.setCentralWidget(split)
         self.open_path(start or os.path.expanduser("~"))
 
+    def _launch_program(self, path, kind):
+        if style.load_preferences().get('confirm_program_launch', True) is not False:
+            dialog = QMessageBox(self)
+            dialog.setIcon(QMessageBox.Icon.Warning)
+            dialog.setWindowTitle('Запуск программы')
+            dialog.setText('Запустить эту программу?')
+            dialog.setInformativeText(
+                'Файл: ' + path + '\nПрограмма получит доступ к вашим файлам и данным. '
+                'Запускайте её только если доверяете источнику. Для исполняемых файлов может быть добавлено право запуска.')
+            run = dialog.addButton('Выполнить в любом случае', QMessageBox.ButtonRole.AcceptRole)
+            cancel = dialog.addButton('Отмена', QMessageBox.ButtonRole.RejectRole)
+            dialog.setDefaultButton(cancel)
+            dialog.exec()
+            if dialog.clickedButton() is not run:
+                return
+        try:
+            launch.start(path, kind)
+        except (OSError, ValueError) as exc:
+            QMessageBox.warning(self, 'Не удалось запустить программу', str(exc))
+
     def _tool(self, icon, fallback, tooltip, slot):
         button = QToolButton()
         themed = QIcon.fromTheme(icon)
@@ -216,7 +236,11 @@ class Files(QMainWindow):
             return
         path = os.path.abspath(os.path.expanduser(path.strip()))
         if os.path.isfile(path):
-            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+            kind = launch.executable_kind(path)
+            if kind:
+                self._launch_program(path, kind)
+            elif not QDesktopServices.openUrl(QUrl.fromLocalFile(path)):
+                QMessageBox.warning(self, "Файлы", "Не удалось открыть файл:\n" + path)
             return
         if not os.path.isdir(path):
             QMessageBox.warning(self, "Файлы", f"Не удалось открыть папку:\n{path}")
@@ -346,6 +370,7 @@ def main():
     style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Files(sys.argv[1] if len(sys.argv) > 1 else None)
+    style.enable_glass(app, window)
     window.show()
     sys.exit(app.exec())
 

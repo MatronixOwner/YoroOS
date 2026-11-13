@@ -29,6 +29,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_desktop_branding.py' -v
           python3 -m unittest discover -s tests -p 'test_build_staging.py' -v
           python3 -m unittest discover -s tests -p 'test_fileops.py' -v
+          python3 -m unittest discover -s tests -p 'test_launch.py' -v
           python3 -m unittest discover -s tests -p 'test_welcome_state.py' -v
           python3 -m unittest discover -s tests -p 'test_window_theme.py' -v
           python3 -m py_compile desktop/yoroapps/*.py desktop/matronix-browser/matronix.py
@@ -58,9 +59,9 @@ jobs:
       - name: Fetch selected icon and cursor themes
         run: |
           set -euxo pipefail
-          mkdir -p .themes/linox
-          curl -fL --retry 3 https://codeload.github.com/abhijeetshewale05/Pebble-Icon-Theme/tar.gz/679d4ed44c0f2386bb27c6392ed7ced7083b0856 | tar xz --strip-components=1 -C .themes/linox
-          test -f .themes/linox/Linox/index.theme && test -f .themes/linox/Linox-Blue/index.theme && test -f .themes/linox/LICENSE
+          mkdir -p .themes/kora
+          curl -fL --retry 3 https://codeload.github.com/bikass/kora/tar.gz/e63a9e1b4f3b1f647b4cf9c64c1ece58ce45f75a | tar xz --strip-components=1 -C .themes/kora
+          test -f .themes/kora/kora/index.theme && test -f .themes/kora/LICENSE
           curl -fL --retry 3 -o .themes/bibata.tar.xz https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz
           tar xJf .themes/bibata.tar.xz -C .themes
           test -f .themes/Bibata-Modern-Ice/index.theme
@@ -132,29 +133,6 @@ jobs:
             out/login-debug.txt
             out/uefi-serial.log.ppm
             out/desktop-screen.ppm
+            out/glass-screen.ppm
             out/boot-screen.ppm
           if-no-files-found: error
-
-      # Publishing is opt-in: a maintainer creates a matching draft release
-      # for this exact commit. Failed tests must never publish an ISO.
-      - name: Publish verified ISO to matching draft release
-        if: success() && github.event_name == 'push' && github.ref_type == 'branch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          short="${GITHUB_SHA:0:12}"
-          tag="matroos-live-$short"
-          if ! draft=$(gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null); then
-            echo "No matching draft release; leaving ISO as an artifact."
-            exit 0
-          fi
-          test "$draft" = true
-          cd out
-          sha256sum -c yoroos-desktop-amd64.iso.sha256
-          name="matroos-live-$short-amd64.iso"
-          cp yoroos-desktop-amd64.iso "$name"
-          sha256sum "$name" > SHA256SUMS.txt
-          gh release upload "$tag" "$name" SHA256SUMS.txt
-          gh release edit "$tag" --draft=false

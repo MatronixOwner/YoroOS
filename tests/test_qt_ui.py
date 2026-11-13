@@ -11,13 +11,13 @@ from unittest.mock import patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'desktop'))
-from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QTimer, QUrl
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 from yoroapps.files import Files
 from yoroapps.notepad import Notepad
-from yoroapps import calculator, computer, media, paint, settings, trashapp, style, welcome, welcome_state
+from yoroapps import calculator, computer, files, media, paint, settings, trashapp, style, welcome, welcome_state
 
 APP = QApplication.instance() or QApplication([])
 style.setup_app(APP)
@@ -62,6 +62,34 @@ class WidgetTest(unittest.TestCase):
             self.assertTrue(w.editor.document().isModified())
             self.assertEqual(w.path, str(Path(td) / 'hello.txt'))
             w.editor.document().setModified(False); w.close()
+
+    def test_program_prompt_and_automatic_launch_setting(self):
+        with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, {'XDG_CONFIG_HOME': td}):
+            path = Path(td) / 'run me.sh'; path.write_text('#!/bin/sh\nexit 0\n')
+            w = Files(td)
+            with patch.object(files.launch, 'start') as start, patch.object(files.QMessageBox, 'exec'):
+                # Closing the confirmation must cancel the launch.
+                w.open_path(str(path))
+                start.assert_not_called()
+            with patch.object(files.launch, 'start') as start:
+                def click_run():
+                    dialog = QApplication.activeModalWidget()
+                    for button in dialog.buttons():
+                        if button.text() == 'Выполнить в любом случае':
+                            button.click(); return
+                    raise AssertionError('Run button missing')
+                QTimer.singleShot(0, click_run)
+                w.open_path(str(path))
+                start.assert_called_once_with(str(path), 'native')
+            style.save_preferences(confirm_program_launch=False)
+            with patch.object(files.launch, 'start') as start:
+                w.open_path(str(path))
+                start.assert_called_once_with(str(path), 'native')
+            config = settings.Settings()
+            self.assertFalse(config.confirm_program_launch.isChecked())
+            config.confirm_program_launch.setChecked(True)
+            self.assertTrue(style.load_preferences()['confirm_program_launch'])
+            config.close(); w.close()
 
     def test_settings_and_welcome_voice_controls(self):
         with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, {'XDG_CONFIG_HOME': td + '/config', 'XDG_DATA_HOME': td + '/data'}):

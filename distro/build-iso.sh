@@ -230,35 +230,30 @@ cp "$REPO_ROOT/distro/scripts/hide-foreign-menu-items.py" "$INC/usr/lib/yoroos/"
 if [ -n "${YORO_THEME_INPUT_DIR:-}" ]; then
     THEME_INPUT=$(CDPATH= cd -- "$YORO_THEME_INPUT_DIR" && pwd)
     mkdir -p "$INC/usr/share/icons" "$INC/usr/share/doc/yoroos/themes"
-    # Linox Blue inherits Linox; keep both with their upstream symlinks intact.
-    cp -a "$THEME_INPUT/linox/Linox" "$THEME_INPUT/linox/Linox-Blue" "$INC/usr/share/icons/"
-    # Linox targets GNOME; Breeze supplies missing Plasma tray/system icons.
-    sed -i 's/^Inherits=Adwaita,/Inherits=breeze,Adwaita,/' "$INC/usr/share/icons/Linox/index.theme"
-    sed -i 's/^Inherits=Linox,/Inherits=Linox,breeze,/' "$INC/usr/share/icons/Linox-Blue/index.theme"
+    # Preserve the selected Kora theme and its GPL license.
+    cp -a "$THEME_INPUT/kora/kora" "$INC/usr/share/icons/"
     cp -a "$THEME_INPUT/Bibata-Modern-Ice" "$INC/usr/share/icons/"
-    cp "$THEME_INPUT/linox/LICENSE" "$INC/usr/share/doc/yoroos/themes/linox-license.txt"
-    cp "$THEME_INPUT/linox/README.md" "$INC/usr/share/doc/yoroos/themes/linox-upstream-readme.md"
+    cp "$THEME_INPUT/kora/LICENSE" "$INC/usr/share/doc/yoroos/themes/kora-license.txt"
+    cp "$THEME_INPUT/kora/README.md" "$INC/usr/share/doc/yoroos/themes/kora-upstream-readme.md"
     cp "$THEME_INPUT/bibata-license.txt" "$INC/usr/share/doc/yoroos/themes/bibata-license.txt"
-    # Supply app-name aliases using Linox artwork, without changing Matronix branding.
-    dest="$INC/usr/share/icons/Linox-Blue/scalable/apps"
-    mkdir -p "$dest"
-    for pair in yoro-files:file-manager yoro-console:terminal yoro-notepad:accessories-text-editor \
-        yoro-settings:preferences-system yoro-calculator:calc yoro-media:smplayer \
+    # Yoro app aliases use Kora artwork; never replace Matronix Browser's icon.
+    dest="$INC/usr/share/icons/kora/apps/scalable"
+    for pair in yoro-files:file-manager yoro-console:utilities-terminal yoro-notepad:accessories-text-editor \
+        yoro-settings:preferences-system yoro-calculator:accessories-calculator yoro-media:smplayer \
         yoro-paint:gnome-paint yoro-computer:preferences-desktop-display; do
         app="${pair%%:*}"; icon="${pair##*:}"
-        cp -L "$THEME_INPUT/linox/Linox/scalable/apps/$icon.svg" "$dest/$app.svg"
+        cp -L "$THEME_INPUT/kora/kora/apps/scalable/$icon.svg" "$dest/$app.svg"
     done
-    cp -L "$THEME_INPUT/linox/Linox/scalable/places/user-trash.svg" "$dest/yoro-trash.svg"
-    # Discard cached indexes after modifying the theme; rebuild in the image hook.
-    rm -f "$INC/usr/share/icons/Linox/icon-theme.cache" "$INC/usr/share/icons/Linox-Blue/icon-theme.cache"
+    cp -L "$THEME_INPUT/kora/kora/places/scalable/user-trash.svg" "$dest/yoro-trash.svg"
+    rm -f "$INC/usr/share/icons/kora/icon-theme.cache"
     cat >> "$INC/usr/share/doc/yoroos/themes/SOURCES.txt" <<'EOTHEME'
-Linox: https://github.com/abhijeetshewale05/Linox-Icon-Theme
-commit 679d4ed44c0f2386bb27c6392ed7ced7083b0856 (GPL-3.0)
+Kora: https://github.com/bikass/kora
+commit e63a9e1b4f3b1f647b4cf9c64c1ece58ce45f75a (GPL-3.0)
 Bibata Modern Ice: https://github.com/ful1e5/Bibata_Cursor
 release v2.0.7 (GPL-3.0)
 EOTHEME
     mkdir -p "$INC/etc/skel/.config" "$INC/usr/share/icons/default"
-    printf '[General]\nColorScheme=BreezeLight\n[Icons]\nTheme=Linox-Blue\n' > "$INC/etc/skel/.config/kdeglobals"
+    printf '[General]\nColorScheme=BreezeLight\n[Icons]\nTheme=kora\n' > "$INC/etc/skel/.config/kdeglobals"
     printf '[Theme]\nname=breeze-light\n' > "$INC/etc/skel/.config/plasmarc"
     printf '[Mouse]\ncursorTheme=Bibata-Modern-Ice\ncursorSize=24\n' > "$INC/etc/skel/.config/kcminputrc"
     printf '[Icon Theme]\nInherits=Bibata-Modern-Ice\n' > "$INC/usr/share/icons/default/index.theme"
@@ -300,7 +295,7 @@ set -e
 python3 -c 'from PySide6.QtSvg import QSvgRenderer; from PySide6.QtWebChannel import QWebChannel; from PySide6.QtWebEngineCore import QWebEnginePage; from PySide6.QtWebEngineWidgets import QWebEngineView'
 update-desktop-database /usr/share/applications || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
-for theme in Linox Linox-Blue; do
+for theme in kora; do
     [ ! -d "/usr/share/icons/$theme" ] || gtk-update-icon-cache -f "/usr/share/icons/$theme"
 done
 # Hide launchers for dependency-provided tools without removing components

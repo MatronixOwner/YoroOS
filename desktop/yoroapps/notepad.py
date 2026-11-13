@@ -114,6 +114,7 @@ def main():
     window = Notepad()
     if len(sys.argv) > 1:
         window.load(sys.argv[1])
+    style.enable_glass(app, window)
     window.show()
     sys.exit(app.exec())
 

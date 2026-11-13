@@ -20,17 +20,16 @@ class BuildStagingTest(unittest.TestCase):
             (fake / 'lb').write_text('#!/bin/sh\n[ "$1" != build ] || touch image.iso\nexit 0\n')
             for p in fake.iterdir(): p.chmod(0o755)
             themes = Path(td) / 'themes'
-            linox = themes / 'linox'
-            for name in ('Linox', 'Linox-Blue'):
-                (linox / name / 'scalable/apps').mkdir(parents=True)
-                (linox / name / 'index.theme').write_text('[Icon Theme]\nName=' + name + '\nInherits=' + ('Linox,Adwaita,hicolor' if name == 'Linox-Blue' else 'Adwaita,hicolor') + '\n')
-            for name in ('file-manager', 'terminal', 'accessories-text-editor', 'preferences-system',
-                         'calc', 'smplayer', 'gnome-paint', 'preferences-desktop-display'):
-                (linox / 'Linox/scalable/apps' / (name + '.svg')).write_text('<svg/>')
-            (linox / 'Linox/scalable/places').mkdir(parents=True)
-            (linox / 'Linox/scalable/places/user-trash.svg').write_text('<svg/>')
-            (linox / 'LICENSE').write_text('Linox license')
-            (linox / 'README.md').write_text('Linox upstream sources')
+            kora = themes / 'kora'
+            (kora / 'kora/apps/scalable').mkdir(parents=True)
+            (kora / 'kora/places/scalable').mkdir(parents=True)
+            (kora / 'kora/index.theme').write_text('[Icon Theme]\nName=Kora\nInherits=breeze,hicolor\n')
+            for name in ('file-manager', 'utilities-terminal', 'accessories-text-editor', 'preferences-system',
+                         'accessories-calculator', 'smplayer', 'gnome-paint', 'preferences-desktop-display'):
+                (kora / 'kora/apps/scalable' / (name + '.svg')).write_text('<svg/>')
+            (kora / 'kora/places/scalable/user-trash.svg').write_text('<svg/>')
+            (kora / 'LICENSE').write_text('Kora license')
+            (kora / 'README.md').write_text('Kora upstream sources')
             (themes / 'bibata-license.txt').write_text('Bibata license')
             (themes / 'Bibata-Modern-Ice').mkdir()
             (themes / 'Bibata-Modern-Ice/index.theme').write_text('[Icon Theme]\nName=Bibata\n')
@@ -42,10 +41,9 @@ class BuildStagingTest(unittest.TestCase):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'
-            self.assertTrue((inc / 'usr/share/icons/Linox/index.theme').exists())
-            self.assertTrue((inc / 'usr/share/icons/Linox-Blue/scalable/apps/yoro-console.svg').exists())
-            self.assertIn('Inherits=Linox,breeze,', (inc / 'usr/share/icons/Linox-Blue/index.theme').read_text())
-            self.assertTrue((inc / 'usr/share/doc/yoroos/themes/linox-license.txt').exists())
+            self.assertTrue((inc / 'usr/share/icons/kora/index.theme').exists())
+            self.assertTrue((inc / 'usr/share/icons/kora/apps/scalable/yoro-console.svg').exists())
+            self.assertTrue((inc / 'usr/share/doc/yoroos/themes/kora-license.txt').exists())
             self.assertTrue((inc / 'usr/share/plymouth/themes/yoro/yoro.script').exists())
             self.assertIn('Name=MatroOS', (inc / 'usr/share/plymouth/themes/yoro/yoro.plymouth').read_text())
             self.assertEqual((inc / 'usr/share/icons/hicolor/512x512/apps/matroos-logo.png').read_bytes(),
@@ -56,7 +54,7 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('ID_LIKE=debian', os_release)
             self.assertIn('Theme=yoro', (inc / 'etc/plymouth/plymouthd.conf').read_text())
             self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
-            self.assertIn('Theme=Linox-Blue', (inc / 'etc/skel/.config/kdeglobals').read_text())
+            self.assertIn('Theme=kora', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
             self.assertIn('KWIN_EFFECTS_FORCE_ANIMATIONS', (inc / 'etc/xdg/plasma-workspace/env/yoro-effects.sh').read_text())
             self.assertIn('Exec=yoro-welcome', (inc / 'etc/xdg/autostart/yoro-welcome.desktop').read_text())

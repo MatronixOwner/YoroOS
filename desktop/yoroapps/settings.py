@@ -123,7 +123,7 @@ class Settings(QMainWindow):
     def _set_accent(self, color):
         try:
             style.save_accent(color)
-            QApplication.instance().setStyleSheet(style.get_stylesheet(color))
+            QApplication.instance().setStyleSheet(style.get_stylesheet(color, glass=bool(QApplication.instance().property('matroGlass'))))
             self.statusBar().showMessage('Цвет сохранён', 3000)
         except OSError as exc:
             QMessageBox.warning(self, 'Оформление', str(exc))
@@ -131,7 +131,7 @@ class Settings(QMainWindow):
     def _set_mode(self, mode):
         try:
             style.save_mode(mode)
-            QApplication.instance().setStyleSheet(style.get_stylesheet())
+            QApplication.instance().setStyleSheet(style.get_stylesheet(glass=bool(QApplication.instance().property('matroGlass'))))
             self.statusBar().showMessage('Тема сохранена', 3000)
         except OSError as exc:
             QMessageBox.warning(self, 'Оформление', str(exc))
@@ -216,11 +216,23 @@ class Settings(QMainWindow):
 
     def _system_page(self):
         page, v = self._page('Система', 'Откройте встроенные настройки оборудования и сети.')
+        frame, box = card('Запуск программ из Файлов',
+            'Программы выполняются с правами текущего пользователя. Отключение подтверждения опасно: запускайте только доверенные файлы. Настройка относится только к приложению «Файлы».')
+        self.confirm_program_launch = QCheckBox('Спрашивать перед запуском программ')
+        self.confirm_program_launch.setChecked(style.load_preferences().get('confirm_program_launch', True) is not False)
+        self.confirm_program_launch.toggled.connect(self._set_confirm_program_launch)
+        box.addWidget(self.confirm_program_launch); v.addWidget(frame)
         for label, module in (('Экран', 'kcm_kscreen'), ('Сеть', 'kcm_network'),
                               ('Звук', 'kcm_pulseaudio'), ('Электропитание', 'kcm_powerdevilprofilesconfig')):
             btn = QPushButton(label + '   ›'); btn.setMinimumHeight(42)
             btn.clicked.connect(lambda _=False, m=module: self._open_kde(m)); v.addWidget(btn)
         v.addStretch(); return page
+
+    def _set_confirm_program_launch(self, enabled):
+        try:
+            style.save_preferences(confirm_program_launch=enabled)
+        except OSError as exc:
+            QMessageBox.warning(self, 'Запуск программ', str(exc))
 
     def _open_kde(self, module):
         if not shutil.which('systemsettings'):
@@ -240,7 +252,7 @@ def main():
     app = QApplication(sys.argv)
     style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
-    window = Settings(); window.show(); sys.exit(app.exec())
+    window = Settings(); style.enable_glass(app, window); window.show(); sys.exit(app.exec())
 
 
 if __name__ == '__main__':

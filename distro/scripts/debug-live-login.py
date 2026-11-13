@@ -125,6 +125,13 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     display=${display:-:0}
     xauth=${xauth:-/home/yoro/.Xauthority}
     echo "DISPLAY=$display XAUTHORITY=$xauth"
+    printf %s '__GLASS_TEST__' | base64 -d > /tmp/matro-glass-smoke.py
+    chmod 644 /tmp/matro-glass-smoke.py
+    if timeout 45 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/matro-glass-smoke.py; then
+        echo MATRO_GLASS_TEST_OK
+    else
+        echo MATRO_GLASS_TEST_FAILED
+    fi
     printf %s '__TERMINAL_TEST__' | base64 -d > /tmp/yoro-terminal-smoke.py
     chmod 644 /tmp/yoro-terminal-smoke.py
     if timeout 90 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-terminal-smoke.py >/tmp/terminal-test.log 2>&1; then
@@ -150,11 +157,14 @@ echo YORO_DIAGNOSTIC_END
     cmd = cmd.replace('__MATRONIX_TEST__', base64.b64encode(smoke).decode())
     terminal_smoke = Path(__file__).with_name('terminal-smoke.py').read_bytes()
     cmd = cmd.replace('__TERMINAL_TEST__', base64.b64encode(terminal_smoke).decode())
+    glass_smoke = Path(__file__).with_name('glass-smoke.py').read_bytes()
+    cmd = cmd.replace('__GLASS_TEST__', base64.b64encode(glass_smoke).decode())
     # Base64 prevents the echoed input line from resembling output markers.
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
     captured = False
+    glass_captured = False
     until = time.monotonic() + 650
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
@@ -163,6 +173,15 @@ echo YORO_DIAGNOSTIC_END
             if not chunk:
                 break
             data += chunk
+            if not glass_captured and b'\r\nMATRO_GLASS_SCREENSHOT_READY\r\n' in data:
+                glass_captured = True
+                try:
+                    with socket.socket(socket.AF_UNIX) as monitor:
+                        monitor.settimeout(10); monitor.connect(str(monitor_sock)); monitor.recv(4096)
+                        monitor.sendall(('screendump ' + str(root / 'glass-screen.ppm') + '\n').encode())
+                        time.sleep(2)
+                except OSError as exc:
+                    print('Glass screenshot failed:', exc, flush=True)
             if not captured and b'\r\nYORO_SCREENSHOT_READY\r\n' in data:
                 captured = True
                 try:
@@ -186,6 +205,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The expected Live fallback password is not valid')
     if expect_desktop and b'\r\nYORO_WELCOME_OK\r\n' not in data:
         raise RuntimeError('Yoro welcome did not appear on first login')
+    if expect_desktop and b'\r\nMATRO_GLASS_TEST_OK\r\n' not in data:
+        raise RuntimeError('Matro Files did not request a translucent KWin blur surface')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
     if expect_desktop and 'Theme: __aurorae__svg__YoroArc' not in text:
