@@ -35,11 +35,16 @@ try:
     while time.monotonic() < deadline:
         if qemu.poll() is not None:
             raise RuntimeError('QEMU exited: ' + qemu.stdout.read())
-        if serial_log.exists() and re.search(rb'Reached target[^\n]*graphical\.target', serial_log.read_bytes()):
-            break
+        if serial_log.exists():
+            boot_log = serial_log.read_bytes()
+            # Plymouth suppresses systemd status on the serial console.
+            # The login prompt only proves userspace reached a getty; below we
+            # independently require Plasma, welcome, terminal and browser.
+            if re.search(rb'Reached target[^\n]*graphical\.target|yoroos login:', boot_log):
+                break
         time.sleep(3)
     else:
-        raise RuntimeError('Timed out before graphical target')
+        raise RuntimeError('Timed out before userspace login or graphical target')
     time.sleep(25)  # SDDM starts asynchronously after the graphical target.
     sock = socket.socket(socket.AF_UNIX)
     sock.connect(str(debug_sock))
