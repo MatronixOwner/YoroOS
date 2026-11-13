@@ -1,4 +1,4 @@
-# YoroOS: soft horizon, animated waiting dots (not a percentage indicator).
+# MatroOS: soft horizon, animated waiting dots (not a percentage indicator).
 Window.SetBackgroundTopColor(0.025, 0.055, 0.105);
 Window.SetBackgroundBottomColor(0.075, 0.15, 0.25);
 logo = Image("logo.png");

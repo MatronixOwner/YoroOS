@@ -2,7 +2,7 @@
 Type=Application
 Name=Центр Настроек Yoro
 Name[ru]=Центр Настроек Yoro
-Comment=Настройки и кастомизация YoroOS
+Comment=Настройки и кастомизация MatroOS
 Exec=yoro-settings
 Icon=yoro-settings
 Categories=Settings;

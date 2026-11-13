@@ -47,6 +47,13 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('Inherits=Linox,breeze,', (inc / 'usr/share/icons/Linox-Blue/index.theme').read_text())
             self.assertTrue((inc / 'usr/share/doc/yoroos/themes/linox-license.txt').exists())
             self.assertTrue((inc / 'usr/share/plymouth/themes/yoro/yoro.script').exists())
+            self.assertIn('Name=MatroOS', (inc / 'usr/share/plymouth/themes/yoro/yoro.plymouth').read_text())
+            self.assertEqual((inc / 'usr/share/icons/hicolor/512x512/apps/matroos-logo.png').read_bytes(),
+                             (root / 'desktop/icons/matroos-logo.png').read_bytes())
+            os_release = (inc / 'etc/os-release').read_text()
+            self.assertIn('PRETTY_NAME="MatroOS Desktop 1.0"', os_release)
+            self.assertIn('ID=matroos', os_release)
+            self.assertIn('ID_LIKE=debian', os_release)
             self.assertIn('Theme=yoro', (inc / 'etc/plymouth/plymouthd.conf').read_text())
             self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
             self.assertIn('Theme=Linox-Blue', (inc / 'etc/skel/.config/kdeglobals').read_text())

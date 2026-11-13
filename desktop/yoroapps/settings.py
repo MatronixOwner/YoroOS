@@ -25,7 +25,7 @@ def os_pretty_name():
                     return line.split("=", 1)[1].strip().strip('"')
     except OSError:
         pass
-    return "YoroOS Desktop"
+    return "MatroOS Desktop"
 
 
 def heading(title, subtitle):
@@ -50,7 +50,7 @@ def card(title, detail):
 class Settings(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Настройки YoroOS")
+        self.setWindowTitle("Настройки MatroOS")
         self.audio = QAudioOutput(self); self.audio.setVolume(0.75)
         self.player = QMediaPlayer(self); self.player.setAudioOutput(self.audio)
         self.player.errorOccurred.connect(self._audio_error)
@@ -76,7 +76,7 @@ class Settings(QMainWindow):
         nav.setCurrentRow(0)
         sidebar = QWidget(); sidebar.setObjectName('sidebar')
         side = QVBoxLayout(sidebar); side.setContentsMargins(14, 22, 14, 14)
-        brand = QLabel('YoroOS'); brand.setObjectName('title')
+        brand = QLabel('MatroOS'); brand.setObjectName('title')
         brand_subtitle = QLabel('ЦЕНТР НАСТРОЕК'); brand_subtitle.setObjectName('section')
         side.addWidget(brand); side.addWidget(brand_subtitle); side.addSpacing(16); side.addWidget(nav)
         foot = QLabel('Создано для вас'); foot.setObjectName('subtitle'); side.addWidget(foot)
@@ -231,7 +231,7 @@ class Settings(QMainWindow):
     def _about_page(self):
         page, v = self._page('О системе', 'Информация об этой тестовой сборке.')
         frame, box = card(os_pretty_name(), f'Linux {platform.release()}  ·  {platform.machine()}')
-        info = QLabel('Live-образ на основе Debian и KDE Plasma.\nИзменения не сохраняются после выключения.\nСобственное ядро YoroOS разрабатывается отдельно.')
+        info = QLabel('Live-образ на основе Debian и KDE Plasma.\nИзменения не сохраняются после выключения.\nСобственное ядро MatroOS разрабатывается отдельно.')
         info.setWordWrap(True); box.addWidget(info); v.addWidget(frame); v.addStretch()
         return page
 

@@ -24,7 +24,7 @@ screenshot = root / 'desktop-screen.ppm'
 qemu = subprocess.Popen([
     'qemu-system-x86_64', '-machine', 'q35', '-accel', 'tcg', '-m', '4096', '-smp', '2',
     '-kernel', str(kernels[0]), '-initrd', str(initrds[0]),
-    '-append', 'boot=live components username=yoro hostname=yoroos console=tty0 console=ttyS0,115200n8 systemd.debug_shell=ttyS1',
+    '-append', 'boot=live components username=yoro hostname=matroos console=tty0 console=ttyS0,115200n8 systemd.debug_shell=ttyS1',
     '-cdrom', str(iso), '-boot', 'd', '-display', 'none',
     '-monitor', 'unix:' + str(monitor_sock) + ',server=on,wait=off',
     '-serial', 'file:' + str(serial_log),
@@ -40,7 +40,7 @@ try:
             # Plymouth suppresses systemd status on the serial console.
             # The login prompt only proves userspace reached a getty; below we
             # independently require Plasma, welcome, terminal and browser.
-            if re.search(rb'Reached target[^\n]*graphical\.target|yoroos login:', boot_log):
+            if re.search(rb'Reached target[^\n]*graphical\.target|matroos login:', boot_log):
                 break
         time.sleep(3)
     else:

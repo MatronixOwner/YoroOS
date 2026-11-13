@@ -2,7 +2,7 @@
 Type=Application
 Name=Yoro Консоль
 Name[ru]=Yoro Консоль
-Comment=Консоль команд YoroOS
+Comment=Консоль команд MatroOS
 Exec=yoro-console
 Icon=yoro-console
 Categories=System;TerminalEmulator;

@@ -2,7 +2,7 @@
 Type=Application
 Name=Matronix Browser
 Name[ru]=Matronix Browser
-Comment=Веб-браузер YoroOS
+Comment=Веб-браузер MatroOS
 Exec=matronix-browser
 Icon=matronix-browser
 Categories=Network;WebBrowser;

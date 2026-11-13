@@ -1,16 +1,16 @@
-# YoroOS
+# MatroOS (ранее YoroOS)
 
-## Текущее направление: YoroOS Desktop
+## Текущее направление: MatroOS Desktop
 
 Основой настольной версии снова выбран **Debian 13 + Linux**. Поверх него —
-оболочка KDE Plasma с оформлением YoroOS и собственные приложения. Linux,
+оболочка KDE Plasma с оформлением MatroOS и собственные приложения. Linux,
 KDE, Qt и другие необходимые компоненты остаются внутри системы; это не ОС на
 собственном ядре. Первый образ — Live, без установки и сохранения изменений.
 Сборка и тестирование: [desktop/README.md](desktop/README.md).
 
 ### Live-образ для тестирования
 
-[Скачать обновлённый ISO](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-b262433/yoroos-debian13-live-b262433-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-b262433)
+[Скачать предыдущий ISO YoroOS](https://github.com/MatronixOwner/YoroOS/releases/download/desktop-debian13-live-b262433/yoroos-debian13-live-b262433-amd64.iso) · [выпуск и SHA256SUMS](https://github.com/MatronixOwner/YoroOS/releases/tag/desktop-debian13-live-b262433)
 
 В Hyper-V создайте ВМ **поколения 2**, выделите не менее 4 ГБ ОЗУ,
 подключите ISO к DVD-приводу, поставьте его первым в порядке загрузки и для

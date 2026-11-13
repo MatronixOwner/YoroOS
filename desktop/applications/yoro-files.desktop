@@ -2,7 +2,7 @@
 Type=Application
 Name=Yoro Файлы
 Name[ru]=Yoro Файлы
-Comment=Файловый менеджер YoroOS
+Comment=Файловый менеджер MatroOS
 Exec=yoro-files
 Icon=yoro-files
 Categories=System;FileManager;

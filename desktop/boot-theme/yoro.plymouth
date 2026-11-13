@@ -1,6 +1,6 @@
 [Plymouth Theme]
-Name=YoroOS
-Description=YoroOS boot screen
+Name=MatroOS
+Description=MatroOS boot screen
 ModuleName=script
 
 [script]

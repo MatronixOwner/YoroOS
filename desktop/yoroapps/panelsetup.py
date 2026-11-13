@@ -74,7 +74,7 @@ for (var i = 0; i < ps.length; i++) {{
         if (w.type == "org.kde.plasma.kickoff" ||
             w.type == "org.kde.plasma.kicker") {{
             w.currentConfigGroup = ["General"];
-            w.writeConfig("icon", "yoro-logo");
+            w.writeConfig("icon", "matroos-logo");
             w.reloadConfig();
         }}
         if (w.type == "org.kde.plasma.icontasks" ||
@@ -118,7 +118,7 @@ top.location = "top";
 top.height = 32;
 var menu = top.addWidget("org.kde.plasma.kickoff");
 menu.currentConfigGroup = ["General"];
-menu.writeConfig("icon", "yoro-logo");
+menu.writeConfig("icon", "matroos-logo");
 menu.reloadConfig();
 top.addWidget("org.kde.plasma.appmenu");
 top.addWidget("org.kde.plasma.panelspacer");

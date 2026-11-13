@@ -12,7 +12,7 @@ from yoroapps import style, trashutil
 class Trash(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Корзина — YoroOS")
+        self.setWindowTitle("Корзина — MatroOS")
         self.resize(780, 460)
         self.items = []
 

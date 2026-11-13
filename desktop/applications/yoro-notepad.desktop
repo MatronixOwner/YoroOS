@@ -2,7 +2,7 @@
 Type=Application
 Name=Yoro Блокнот
 Name[ru]=Yoro Блокнот
-Comment=Текстовый редактор YoroOS
+Comment=Текстовый редактор MatroOS
 Exec=yoro-notepad
 Icon=yoro-notepad
 Categories=Utility;TextEditor;

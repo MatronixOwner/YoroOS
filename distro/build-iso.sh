@@ -35,9 +35,9 @@ lb config \
     --apt-recommends false \
     --debian-installer false \
     --memtest none \
-    --iso-application "YoroOS Desktop" \
-    --iso-volume "YOROOS" \
-    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru quiet splash plymouth.ignore-serial-consoles systemd.show_status=1 console=tty0 console=ttyS0,115200n8"
+    --iso-application "MatroOS Desktop" \
+    --iso-volume "MATROOS" \
+    --bootappend-live "boot=live components username=yoro hostname=matroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru quiet splash plymouth.ignore-serial-consoles systemd.show_status=1 console=tty0 console=ttyS0,115200n8"
 
 # ---- package selection -------------------------------------------------
 mkdir -p config/package-lists
@@ -121,6 +121,8 @@ cp -r "$REPO_ROOT/desktop/yoroapps" "$INC/usr/share/yoroos/"
 cp "$REPO_ROOT"/desktop/applications/*.desktop "$INC/usr/share/applications/"
 mkdir -p "$INC/usr/share/icons/hicolor/scalable/apps" "$INC/usr/share/wallpapers/YoroOS" "$INC/etc/xdg/autostart"
 cp "$REPO_ROOT"/desktop/icons/*.svg "$INC/usr/share/icons/hicolor/scalable/apps/"
+mkdir -p "$INC/usr/share/icons/hicolor/512x512/apps"
+cp "$REPO_ROOT/desktop/icons/matroos-logo.png" "$INC/usr/share/icons/hicolor/512x512/apps/"
 cp "$REPO_ROOT"/desktop/wallpapers/*.jpg "$INC/usr/share/wallpapers/YoroOS/"
 # Optional, separately licensed recording. Never download voices at build/login.
 if [ -f "$REPO_ROOT/desktop/sounds/welcome.mp3" ]; then
@@ -280,10 +282,10 @@ EOS2
 
 # Branding (keep Debian base identity via ID_LIKE for tooling).
 cat > "$INC/etc/os-release" <<'EOF'
-PRETTY_NAME="YoroOS Desktop 1.0"
-NAME="YoroOS Desktop"
+PRETTY_NAME="MatroOS Desktop 1.0"
+NAME="MatroOS Desktop"
 VERSION="1.0"
-ID=yoroos
+ID=matroos
 ID_LIKE=debian
 HOME_URL="https://github.com/MatronixOwner/YoroOS"
 EOF

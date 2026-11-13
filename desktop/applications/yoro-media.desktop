@@ -2,7 +2,7 @@
 Type=Application
 Name=Yoro Медиа
 Name[ru]=Yoro Медиа
-Comment=Медиаплеер YoroOS
+Comment=Медиаплеер MatroOS
 Exec=yoro-media
 Icon=yoro-media
 Categories=AudioVideo;Player;

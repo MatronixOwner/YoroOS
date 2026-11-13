@@ -134,3 +134,27 @@ jobs:
             out/desktop-screen.ppm
             out/boot-screen.ppm
           if-no-files-found: error
+
+      # Publishing is opt-in: a maintainer creates a matching draft release
+      # for this exact commit. Failed tests must never publish an ISO.
+      - name: Publish verified ISO to matching draft release
+        if: success() && github.event_name == 'push' && github.ref_type == 'branch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          short="${GITHUB_SHA:0:12}"
+          tag="matroos-live-$short"
+          if ! draft=$(gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null); then
+            echo "No matching draft release; leaving ISO as an artifact."
+            exit 0
+          fi
+          test "$draft" = true
+          cd out
+          sha256sum -c yoroos-desktop-amd64.iso.sha256
+          name="matroos-live-$short-amd64.iso"
+          cp yoroos-desktop-amd64.iso "$name"
+          sha256sum "$name" > SHA256SUMS.txt
+          gh release upload "$tag" "$name" SHA256SUMS.txt
+          gh release edit "$tag" --draft=false

@@ -12,7 +12,7 @@ from yoroapps import style, welcome_state
 class Welcome(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Добро пожаловать в YoroOS')
+        self.setWindowTitle('Добро пожаловать в MatroOS')
         self.resize(610, 430)
         self.player = QMediaPlayer(self)
         self.audio = QAudioOutput(self)
@@ -20,14 +20,14 @@ class Welcome(QWidget):
         self.player.setAudioOutput(self.audio)
         layout = QVBoxLayout(self); layout.setContentsMargins(50, 40, 50, 38); layout.setSpacing(14)
         logo = QLabel(); logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        for path in ('/usr/share/icons/hicolor/scalable/apps/yoro-logo.svg',
-                     os.path.join(os.path.dirname(__file__), '..', 'icons', 'yoro-logo.svg')):
+        for path in ('/usr/share/icons/hicolor/512x512/apps/matroos-logo.png',
+                     os.path.join(os.path.dirname(__file__), '..', 'icons', 'matroos-logo.png')):
             if os.path.isfile(path):
                 logo.setPixmap(QPixmap(path).scaled(78, 78, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
                 break
         layout.addWidget(logo)
         kicker = QLabel('ВАШЕ ПРОСТРАНСТВО'); kicker.setObjectName('section'); kicker.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title = QLabel('Добро пожаловать в YoroOS'); title.setObjectName('title'); title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title = QLabel('Добро пожаловать в MatroOS'); title.setObjectName('title'); title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         text = QLabel('Всё готово к началу работы. Настройте рабочий стол под себя или сразу переходите к приложениям.')
         text.setObjectName('subtitle'); text.setWordWrap(True); text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         live = QLabel('Live-сессия: изменения исчезнут после выключения.')

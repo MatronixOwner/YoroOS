@@ -2,7 +2,7 @@
 Type=Application
 Name=Yoro Калькулятор
 Name[ru]=Yoro Калькулятор
-Comment=Калькулятор YoroOS
+Comment=Калькулятор MatroOS
 Exec=yoro-calculator
 Icon=yoro-calculator
 Categories=Utility;Calculator;

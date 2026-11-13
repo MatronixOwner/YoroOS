@@ -32,7 +32,7 @@ def human(n):
 class Computer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Мой компьютер — YoroOS")
+        self.setWindowTitle("Мой компьютер — MatroOS")
         self.resize(760, 540)
 
         layout = QVBoxLayout()
