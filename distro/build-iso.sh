@@ -100,6 +100,7 @@ python3-cryptography
 # System basics
 network-manager
 pipewire
+pipewire-pulse
 wireplumber
 sudo
 xdg-utils

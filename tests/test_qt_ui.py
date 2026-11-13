@@ -1,5 +1,8 @@
 """Headless widget and functional tests; run with the system PyQt6 packages."""
 import os
+import shutil
+import subprocess
+import time
 import sys
 import tempfile
 import unittest
@@ -8,6 +11,8 @@ from unittest.mock import patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'desktop'))
+from PyQt6.QtCore import QUrl
+from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 from yoroapps.files import Files
@@ -79,6 +84,18 @@ class WidgetTest(unittest.TestCase):
             screen.play_welcome(); self.assertEqual(screen.player.source().toLocalFile(), str(welcome_state.sound_path()))
             screen.close(); w.close()
         APP.setStyleSheet(style.get_stylesheet())
+
+    @unittest.skipUnless(shutil.which('ffmpeg'), 'ffmpeg required to generate test MP3')
+    def test_media_backend_loads_a_real_mp3(self):
+        with tempfile.TemporaryDirectory() as td:
+            source = Path(td) / 'tone.mp3'
+            subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-y', str(source)], check=True)
+            player = QMediaPlayer()
+            player.setSource(QUrl.fromLocalFile(str(source)))
+            deadline = time.monotonic() + 10
+            while player.duration() <= 0 and time.monotonic() < deadline:
+                APP.processEvents(); time.sleep(.05)
+            self.assertGreater(player.duration(), 0, player.errorString())
 
     def test_all_other_windows_construct(self):
         for cls in (calculator.Calculator, computer.Computer,

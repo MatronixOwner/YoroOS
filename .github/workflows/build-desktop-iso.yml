@@ -36,7 +36,7 @@ jobs:
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work -e QT_QPA_PLATFORM=offscreen debian:trixie bash -euc '
             apt-get update -qq
-            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-pyqt6 python3-pyqt6.qtmultimedia qt6-svg-plugins breeze-icon-theme
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3-pyqt6 python3-pyqt6.qtmultimedia qt6-svg-plugins breeze-icon-theme ffmpeg
             timeout -k 5 120 /usr/bin/python3 -m unittest discover -s tests -p "test_qt_ui.py" -v
           '
 
