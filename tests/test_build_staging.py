@@ -30,6 +30,7 @@ class BuildStagingTest(unittest.TestCase):
             (linox / 'Linox/scalable/places').mkdir(parents=True)
             (linox / 'Linox/scalable/places/user-trash.svg').write_text('<svg/>')
             (linox / 'LICENSE').write_text('Linox license')
+            (linox / 'README.md').write_text('Linox upstream sources')
             (themes / 'bibata-license.txt').write_text('Bibata license')
             (themes / 'Bibata-Modern-Ice').mkdir()
             (themes / 'Bibata-Modern-Ice/index.theme').write_text('[Icon Theme]\nName=Bibata\n')

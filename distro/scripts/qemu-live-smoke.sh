@@ -45,6 +45,13 @@ PYSHOT
         echo 'UEFI smoke test: display manager or graphical.target reached (Plasma session not verified).'
         exit 0
     fi
+    # With Plymouth, systemd suppresses progress on the serial console.
+    # A getty login prompt proves userspace is running; the next QEMU test
+    # separately checks the actual Plasma session, apps and effects.
+    if [ -f "$log" ] && grep -aq 'yoroos login:' "$log"; then
+        echo 'UEFI smoke test: login prompt reached (desktop checked separately).'
+        exit 0
+    fi
     if ! kill -0 "$pid" 2>/dev/null; then echo 'QEMU exited before desktop target' >&2; break; fi
     sleep 5
 done

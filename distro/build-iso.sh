@@ -231,6 +231,7 @@ if [ -n "${YORO_THEME_INPUT_DIR:-}" ]; then
     cp -a "$THEME_INPUT/linox/Linox" "$THEME_INPUT/linox/Linox-Blue" "$INC/usr/share/icons/"
     cp -a "$THEME_INPUT/Bibata-Modern-Ice" "$INC/usr/share/icons/"
     cp "$THEME_INPUT/linox/LICENSE" "$INC/usr/share/doc/yoroos/themes/linox-license.txt"
+    cp "$THEME_INPUT/linox/README.md" "$INC/usr/share/doc/yoroos/themes/linox-upstream-readme.md"
     cp "$THEME_INPUT/bibata-license.txt" "$INC/usr/share/doc/yoroos/themes/bibata-license.txt"
     # Supply app-name aliases using Linox artwork, without changing Matronix branding.
     dest="$INC/usr/share/icons/Linox-Blue/scalable/apps"
