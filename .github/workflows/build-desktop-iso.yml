@@ -58,8 +58,9 @@ jobs:
       - name: Fetch selected icon and cursor themes
         run: |
           set -euxo pipefail
-          mkdir -p .themes/colloid
-          curl -fL --retry 3 https://codeload.github.com/vinceliuice/Colloid-icon-theme/tar.gz/ceac6608ecd0e40025cbc2ebbd32bf0e0f4ebc6a | tar xz --strip-components=1 -C .themes/colloid
+          mkdir -p .themes/linox
+          curl -fL --retry 3 https://codeload.github.com/abhijeetshewale05/Pebble-Icon-Theme/tar.gz/679d4ed44c0f2386bb27c6392ed7ced7083b0856 | tar xz --strip-components=1 -C .themes/linox
+          test -f .themes/linox/Linox/index.theme && test -f .themes/linox/Linox-Blue/index.theme && test -f .themes/linox/LICENSE
           curl -fL --retry 3 -o .themes/bibata.tar.xz https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz
           tar xJf .themes/bibata.tar.xz -C .themes
           test -f .themes/Bibata-Modern-Ice/index.theme
@@ -131,4 +132,5 @@ jobs:
             out/login-debug.txt
             out/uefi-serial.log.ppm
             out/desktop-screen.ppm
+            out/boot-screen.ppm
           if-no-files-found: error

@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=YoroOS
+Description=YoroOS boot screen
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/yoro
+ScriptFile=/usr/share/plymouth/themes/yoro/yoro.script

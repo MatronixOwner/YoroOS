@@ -68,8 +68,8 @@ def setup_app(app):
             paths.append(path)
     QIcon.setThemeSearchPaths(paths)
     if not QIcon.themeName():
-        if os.path.exists('/usr/share/icons/Colloid/index.theme'):
-            QIcon.setThemeName('Colloid')
+        if os.path.exists('/usr/share/icons/Linox-Blue/index.theme'):
+            QIcon.setThemeName('Linox-Blue')
         elif os.path.exists('/usr/share/icons/breeze/index.theme'):
             QIcon.setThemeName('breeze')
 

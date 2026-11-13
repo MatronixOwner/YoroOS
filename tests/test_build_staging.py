@@ -20,9 +20,16 @@ class BuildStagingTest(unittest.TestCase):
             (fake / 'lb').write_text('#!/bin/sh\n[ "$1" != build ] || touch image.iso\nexit 0\n')
             for p in fake.iterdir(): p.chmod(0o755)
             themes = Path(td) / 'themes'
-            (themes / 'colloid').mkdir(parents=True)
-            (themes / 'colloid/install.sh').write_text('#!/bin/sh\nmkdir -p "$2/Colloid"\necho "[Icon Theme]" > "$2/Colloid/index.theme"\n')
-            (themes / 'colloid/LICENSE').write_text('Colloid license')
+            linox = themes / 'linox'
+            for name in ('Linox', 'Linox-Blue'):
+                (linox / name / 'scalable/apps').mkdir(parents=True)
+                (linox / name / 'index.theme').write_text('[Icon Theme]\nName=' + name + '\n')
+            for name in ('file-manager', 'terminal', 'accessories-text-editor', 'preferences-system',
+                         'calc', 'smplayer', 'gnome-paint', 'preferences-desktop-display'):
+                (linox / 'Linox/scalable/apps' / (name + '.svg')).write_text('<svg/>')
+            (linox / 'Linox/scalable/places').mkdir(parents=True)
+            (linox / 'Linox/scalable/places/user-trash.svg').write_text('<svg/>')
+            (linox / 'LICENSE').write_text('Linox license')
             (themes / 'bibata-license.txt').write_text('Bibata license')
             (themes / 'Bibata-Modern-Ice').mkdir()
             (themes / 'Bibata-Modern-Ice/index.theme').write_text('[Icon Theme]\nName=Bibata\n')
@@ -30,13 +37,17 @@ class BuildStagingTest(unittest.TestCase):
             subprocess.run(['bash', str(root / 'distro/build-iso.sh'), str(root / 'out')], env=env, check=True, capture_output=True, text=True)
             work = root / 'distro/work/config'
             packages = (work / 'package-lists/yoro.list.chroot').read_text()
-            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'libgl1-mesa-dri', 'libglx-mesa0', 'libegl-mesa0', 'python3-gi', 'gir1.2-vte-2.91', 'pipewire-pulse'):
+            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'libgl1-mesa-dri', 'libglx-mesa0', 'libegl-mesa0', 'python3-gi', 'gir1.2-vte-2.91', 'pipewire-pulse', 'plymouth', 'adwaita-icon-theme'):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'
-            self.assertTrue((inc / 'usr/share/icons/Colloid/index.theme').exists())
+            self.assertTrue((inc / 'usr/share/icons/Linox/index.theme').exists())
+            self.assertTrue((inc / 'usr/share/icons/Linox-Blue/scalable/apps/yoro-console.svg').exists())
+            self.assertTrue((inc / 'usr/share/doc/yoroos/themes/linox-license.txt').exists())
+            self.assertTrue((inc / 'usr/share/plymouth/themes/yoro/yoro.script').exists())
+            self.assertIn('Theme=yoro', (inc / 'etc/plymouth/plymouthd.conf').read_text())
             self.assertTrue((inc / 'usr/share/icons/Bibata-Modern-Ice/index.theme').exists())
-            self.assertIn('Theme=Colloid', (inc / 'etc/skel/.config/kdeglobals').read_text())
+            self.assertIn('Theme=Linox-Blue', (inc / 'etc/skel/.config/kdeglobals').read_text())
             self.assertIn('Bibata-Modern-Ice', (inc / 'etc/skel/.config/kcminputrc').read_text())
             self.assertIn('KWIN_EFFECTS_FORCE_ANIMATIONS', (inc / 'etc/xdg/plasma-workspace/env/yoro-effects.sh').read_text())
             self.assertIn('Exec=yoro-welcome', (inc / 'etc/xdg/autostart/yoro-welcome.desktop').read_text())

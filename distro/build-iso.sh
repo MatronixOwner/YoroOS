@@ -37,7 +37,7 @@ lb config \
     --memtest none \
     --iso-application "YoroOS Desktop" \
     --iso-volume "YOROOS" \
-    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru console=tty0 console=ttyS0,115200n8"
+    --bootappend-live "boot=live components username=yoro hostname=yoroos locales=ru_RU.UTF-8,en_US.UTF-8 keyboard-layouts=us,ru quiet splash plymouth.ignore-serial-consoles systemd.show_status=1 console=tty0 console=ttyS0,115200n8"
 
 # ---- package selection -------------------------------------------------
 mkdir -p config/package-lists
@@ -69,6 +69,8 @@ xdg-desktop-portal-kde
 sddm
 sddm-theme-breeze
 breeze-icon-theme
+adwaita-icon-theme
+plymouth
 qt6-svg-plugins
 qt6-translations-l10n
 xorg
@@ -125,6 +127,14 @@ if [ -f "$REPO_ROOT/desktop/sounds/welcome.mp3" ]; then
     mkdir -p "$INC/usr/share/yoroos/sounds"
     cp "$REPO_ROOT/desktop/sounds/welcome.mp3" "$INC/usr/share/yoroos/sounds/welcome.mp3"
 fi
+# Plymouth replaces routine console messages during startup; Esc reveals details.
+mkdir -p "$INC/usr/share/plymouth/themes/yoro" "$INC/etc/plymouth"
+cp "$REPO_ROOT"/desktop/boot-theme/* "$INC/usr/share/plymouth/themes/yoro/"
+cat > "$INC/etc/plymouth/plymouthd.conf" <<'EOPLY'
+[Daemon]
+Theme=yoro
+ShowDelay=0
+EOPLY
 # Window decorations and license are included even when external themes are absent.
 mkdir -p "$INC/usr/share/aurorae/themes" "$INC/usr/share/doc/yoroos/themes" "$INC/etc/skel/.config"
 cp -r "$REPO_ROOT/desktop/themes/YoroArc" "$INC/usr/share/aurorae/themes/"
@@ -217,18 +227,31 @@ cp "$REPO_ROOT/distro/scripts/hide-foreign-menu-items.py" "$INC/usr/lib/yoroos/"
 if [ -n "${YORO_THEME_INPUT_DIR:-}" ]; then
     THEME_INPUT=$(CDPATH= cd -- "$YORO_THEME_INPUT_DIR" && pwd)
     mkdir -p "$INC/usr/share/icons" "$INC/usr/share/doc/yoroos/themes"
-    bash "$THEME_INPUT/colloid/install.sh" --dest "$PWD/$INC/usr/share/icons" --theme default
+    # Linox Blue inherits Linox; keep both with their upstream symlinks intact.
+    cp -a "$THEME_INPUT/linox/Linox" "$THEME_INPUT/linox/Linox-Blue" "$INC/usr/share/icons/"
     cp -a "$THEME_INPUT/Bibata-Modern-Ice" "$INC/usr/share/icons/"
-    cp "$THEME_INPUT/colloid/LICENSE" "$INC/usr/share/doc/yoroos/themes/colloid-license.txt"
+    cp "$THEME_INPUT/linox/LICENSE" "$INC/usr/share/doc/yoroos/themes/linox-license.txt"
     cp "$THEME_INPUT/bibata-license.txt" "$INC/usr/share/doc/yoroos/themes/bibata-license.txt"
-    cat > "$INC/usr/share/doc/yoroos/themes/SOURCES.txt" <<'EOTHEME'
-Colloid: https://github.com/vinceliuice/Colloid-icon-theme
-commit ceac6608ecd0e40025cbc2ebbd32bf0e0f4ebc6a (GPL-3.0)
+    # Supply app-name aliases using Linox artwork, without changing Matronix branding.
+    dest="$INC/usr/share/icons/Linox-Blue/scalable/apps"
+    mkdir -p "$dest"
+    for pair in yoro-files:file-manager yoro-console:terminal yoro-notepad:accessories-text-editor \
+        yoro-settings:preferences-system yoro-calculator:calc yoro-media:smplayer \
+        yoro-paint:gnome-paint yoro-computer:preferences-desktop-display; do
+        app="${pair%%:*}"; icon="${pair##*:}"
+        cp -L "$THEME_INPUT/linox/Linox/scalable/apps/$icon.svg" "$dest/$app.svg"
+    done
+    cp -L "$THEME_INPUT/linox/Linox/scalable/places/user-trash.svg" "$dest/yoro-trash.svg"
+    # Discard cached indexes after modifying the theme; rebuild in the image hook.
+    rm -f "$INC/usr/share/icons/Linox/icon-theme.cache" "$INC/usr/share/icons/Linox-Blue/icon-theme.cache"
+    cat >> "$INC/usr/share/doc/yoroos/themes/SOURCES.txt" <<'EOTHEME'
+Linox: https://github.com/abhijeetshewale05/Linox-Icon-Theme
+commit 679d4ed44c0f2386bb27c6392ed7ced7083b0856 (GPL-3.0)
 Bibata Modern Ice: https://github.com/ful1e5/Bibata_Cursor
 release v2.0.7 (GPL-3.0)
 EOTHEME
     mkdir -p "$INC/etc/skel/.config" "$INC/usr/share/icons/default"
-    printf '[General]\nColorScheme=BreezeLight\n[Icons]\nTheme=Colloid\n' > "$INC/etc/skel/.config/kdeglobals"
+    printf '[General]\nColorScheme=BreezeLight\n[Icons]\nTheme=Linox-Blue\n' > "$INC/etc/skel/.config/kdeglobals"
     printf '[Theme]\nname=breeze-light\n' > "$INC/etc/skel/.config/plasmarc"
     printf '[Mouse]\ncursorTheme=Bibata-Modern-Ice\ncursorSize=24\n' > "$INC/etc/skel/.config/kcminputrc"
     printf '[Icon Theme]\nInherits=Bibata-Modern-Ice\n' > "$INC/usr/share/icons/default/index.theme"
@@ -270,6 +293,9 @@ set -e
 python3 -c 'from PySide6.QtSvg import QSvgRenderer; from PySide6.QtWebChannel import QWebChannel; from PySide6.QtWebEngineCore import QWebEnginePage; from PySide6.QtWebEngineWidgets import QWebEngineView'
 update-desktop-database /usr/share/applications || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
+for theme in Linox Linox-Blue; do
+    [ ! -d "/usr/share/icons/$theme" ] || gtk-update-icon-cache -f "/usr/share/icons/$theme"
+done
 # Hide launchers for dependency-provided tools without removing components
 # required by Plasma, hardware, MIME handlers, or user-installed apps later.
 python3 /usr/lib/yoroos/hide-foreign-menu-items.py

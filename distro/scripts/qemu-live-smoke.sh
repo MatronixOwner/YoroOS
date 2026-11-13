@@ -31,6 +31,16 @@ except OSError as exc:
     print('Could not send GRUB selection:', exc)
 PYKEY
     fi
+    if [ "$i" -eq 6 ]; then
+        python3 - "$monitor" "$(dirname "$log")/boot-screen.ppm" <<'PYSHOT'
+import socket, sys, time
+try:
+    with socket.socket(socket.AF_UNIX) as s:
+        s.connect(sys.argv[1]); s.sendall(('screendump ' + sys.argv[2] + '\n').encode()); time.sleep(1)
+except OSError as exc:
+    print('Boot screenshot unavailable:', exc)
+PYSHOT
+    fi
     if [ -f "$log" ] && grep -aEiq 'Reached target.*(graphical|Graphical)|Started.*(Simple Desktop Display Manager|sddm)' "$log"; then
         echo 'UEFI smoke test: display manager or graphical.target reached (Plasma session not verified).'
         exit 0
