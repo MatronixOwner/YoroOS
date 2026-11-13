@@ -30,6 +30,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_build_staging.py' -v
           python3 -m unittest discover -s tests -p 'test_fileops.py' -v
           python3 -m unittest discover -s tests -p 'test_welcome_state.py' -v
+          python3 -m unittest discover -s tests -p 'test_window_theme.py' -v
           python3 -m py_compile desktop/yoroapps/*.py desktop/matronix-browser/matronix.py
 
       - name: Test application windows with Qt

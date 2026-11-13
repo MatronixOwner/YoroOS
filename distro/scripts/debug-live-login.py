@@ -183,6 +183,8 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('Yoro welcome did not appear on first login')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
+    if expect_desktop and 'Theme: __aurorae__svg__YoroArc' not in text:
+        raise RuntimeError('Yoro Arc window decoration was not loaded')
     if expect_desktop:
         for effect in ('magiclamp', 'scale'):
             if not re.search(r'EFFECT:' + effect + r'\r?\ntrue\r?\n', text):

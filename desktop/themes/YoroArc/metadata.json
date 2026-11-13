@@ -1,0 +1,13 @@
+{
+  "KPackageStructure": "aurorae",
+  "KPlugin": {
+    "Authors": [{"Name": "YoroOS"}],
+    "Category": "Plasma 6 Window Decorations",
+    "ServiceTypes": ["aurorae"],
+    "Name": "Yoro Arc",
+    "Description": "YoroOS window decoration with original window controls",
+    "Id": "YoroArc",
+    "License": "GPL-3.0",
+    "Version": "1.0"
+  }
+}

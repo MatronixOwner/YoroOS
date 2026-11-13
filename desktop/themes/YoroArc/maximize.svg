@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="23" height="115" viewBox="0 0 23 115">
+<g id="active-center" transform="translate(0 0)">
+    <rect width="23" height="23" fill="none"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#e9eef5" stroke="#d6dfea" stroke-width="0.8"/>
+    <g fill="none" stroke="#455870" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 10 V8.5 H10 M13 8.5 H14.5 V10 M14.5 13 V14.5 H13 M10 14.5 H8.5 V13" /></g>
+  </g>
+<g id="inactive-center" transform="translate(0 23)">
+    <rect width="23" height="23" fill="none"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#f0f2f5" stroke="#e5e9ee" stroke-width="0.8"/>
+    <g fill="none" stroke="#a2afbf" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 10 V8.5 H10 M13 8.5 H14.5 V10 M14.5 13 V14.5 H13 M10 14.5 H8.5 V13" /></g>
+  </g>
+<g id="hover-center" transform="translate(0 46)">
+    <rect width="23" height="23" fill="none"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#d3e3f5" stroke="#b5d1eb" stroke-width="0.8"/>
+    <g fill="none" stroke="#1e4d80" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 10 V8.5 H10 M13 8.5 H14.5 V10 M14.5 13 V14.5 H13 M10 14.5 H8.5 V13" /></g>
+  </g>
+<g id="pressed-center" transform="translate(0 69)">
+    <rect width="23" height="23" fill="none"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#b8cee6" stroke="#9ab9d9" stroke-width="0.8"/>
+    <g fill="none" stroke="#153e6b" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 10 V8.5 H10 M13 8.5 H14.5 V10 M14.5 13 V14.5 H13 M10 14.5 H8.5 V13" /></g>
+  </g>
+<g id="deactivated-center" transform="translate(0 92)">
+    <rect width="23" height="23" fill="none"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#f3f5f7" stroke="#ebeff3" stroke-width="0.8"/>
+    <g fill="none" stroke="#bdc7d2" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 10 V8.5 H10 M13 8.5 H14.5 V10 M14.5 13 V14.5 H13 M10 14.5 H8.5 V13" /></g>
+  </g>
+</svg>

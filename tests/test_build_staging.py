@@ -44,8 +44,9 @@ class BuildStagingTest(unittest.TestCase):
             kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
             self.assertIn('magiclampEnabled=true', kwin)
             self.assertIn('minimizeanimationEnabled=false', kwin)
-            self.assertIn('ButtonsOnLeft=XIA', kwin)
-            self.assertTrue((inc / 'usr/share/aurorae/themes/WhiteSur/decoration.svg').exists())
+            self.assertIn('ButtonsOnLeft=\nButtonsOnRight=IAX', kwin)
+            self.assertIn('theme=__aurorae__svg__YoroArc', kwin)
+            self.assertTrue((inc / 'usr/share/aurorae/themes/YoroArc/decoration.svg').exists())
             self.assertTrue((inc / 'usr/share/wallpapers/YoroOS/yoro-horizon.jpg').exists())
             self.assertIn('Session=plasmax11.desktop', (inc / 'etc/sddm.conf.d/90-yoro-live.conf').read_text())
             hook_live = inc / 'usr/lib/live/config/9999-yoro-sddm'

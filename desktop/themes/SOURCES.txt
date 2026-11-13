@@ -1,4 +1,10 @@
 WhiteSur Aurorae window decoration by Vince Liuice
 https://github.com/vinceliuice/WhiteSur-kde
 Upstream commit cf4df59ce91004f7ea39358b1b8ff917d5c329f7
-License: GPL-3.0; see LICENSE-WhiteSur.txt. Assets are unmodified.
+License: GPL-3.0; see LICENSE-WhiteSur.txt. WhiteSur assets are unmodified.
+
+Yoro Arc window decoration (GPL-3.0)
+The window frame, shadows, and optional secondary controls are derived from
+WhiteSur Aurorae by Vince Liuice, commit listed above; see LICENSE-WhiteSur.txt.
+Close, minimize, maximize, and restore SVG buttons are original YoroOS artwork.
+The configuration and metadata are adapted from WhiteSur.

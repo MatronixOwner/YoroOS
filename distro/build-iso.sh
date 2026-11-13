@@ -127,7 +127,7 @@ if [ -f "$REPO_ROOT/desktop/sounds/welcome.mp3" ]; then
 fi
 # Window decorations and license are included even when external themes are absent.
 mkdir -p "$INC/usr/share/aurorae/themes" "$INC/usr/share/doc/yoroos/themes" "$INC/etc/skel/.config"
-cp -r "$REPO_ROOT/desktop/themes/WhiteSur" "$INC/usr/share/aurorae/themes/"
+cp -r "$REPO_ROOT/desktop/themes/YoroArc" "$INC/usr/share/aurorae/themes/"
 cp "$REPO_ROOT/desktop/themes/"{SOURCES.txt,LICENSE-WhiteSur.txt} "$INC/usr/share/doc/yoroos/themes/"
 # KWin normally disables animations on llvmpipe, the common VM renderer.
 # Allow a user-supplied 0 to disable them again on slower machines.
@@ -138,9 +138,9 @@ EOENV
 cat > "$INC/etc/skel/.config/kwinrc" <<'EOKWIN'
 [org.kde.kdecoration2]
 library=org.kde.kwin.aurorae
-theme=__aurorae__svg__WhiteSur
-ButtonsOnLeft=XIA
-ButtonsOnRight=
+theme=__aurorae__svg__YoroArc
+ButtonsOnLeft=
+ButtonsOnRight=IAX
 [Plugins]
 magiclampEnabled=true
 minimizeanimationEnabled=false
