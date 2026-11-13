@@ -229,6 +229,10 @@ if [ -n "${YORO_THEME_INPUT_DIR:-}" ]; then
     mkdir -p "$INC/usr/share/icons" "$INC/usr/share/doc/yoroos/themes"
     # Linox Blue inherits Linox; keep both with their upstream symlinks intact.
     cp -a "$THEME_INPUT/linox/Linox" "$THEME_INPUT/linox/Linox-Blue" "$INC/usr/share/icons/"
+    # Linox targets GNOME; Breeze supplies missing Plasma tray/system icons.
+    for theme in Linox Linox-Blue; do
+        sed -i 's/^Inherits=/Inherits=breeze,/' "$INC/usr/share/icons/$theme/index.theme"
+    done
     cp -a "$THEME_INPUT/Bibata-Modern-Ice" "$INC/usr/share/icons/"
     cp "$THEME_INPUT/linox/LICENSE" "$INC/usr/share/doc/yoroos/themes/linox-license.txt"
     cp "$THEME_INPUT/linox/README.md" "$INC/usr/share/doc/yoroos/themes/linox-upstream-readme.md"
