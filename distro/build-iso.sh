@@ -152,6 +152,7 @@ theme=__aurorae__svg__YoroArc
 ButtonsOnLeft=
 ButtonsOnRight=IAX
 [Plugins]
+blurEnabled=true
 magiclampEnabled=true
 minimizeanimationEnabled=false
 scaleEnabled=true
@@ -308,6 +309,13 @@ systemctl set-default graphical.target
 update-initramfs -u -k all
 mkdir -p /usr/share/doc/yoroos
 dpkg-query -W -f='${Package}\t${Version}\n' > /usr/share/doc/yoroos/packages.tsv
+# Refuse to ship known standalone antivirus scanners, even if pulled in by a
+# future dependency. Do not disable the firewall, authentication or updates.
+if dpkg-query -W -f='${db:Status-Status} ${binary:Package}\n' | \
+    grep -E '^installed (clamav(-[^ :]+)?|clamav-daemon|clamav-freshclam|clamtk|libclamav[0-9]*|sophos-av|chkrootkit|rkhunter)(:[^ ]+)?$'; then
+    echo 'Unexpected antivirus package in YoroOS image' >&2
+    exit 1
+fi
 EOF
 chmod +x config/hooks/normal/9100-yoro.hook.chroot
 

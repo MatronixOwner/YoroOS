@@ -36,6 +36,17 @@
   </sodipodi:namedview>
   <defs
      id="defs40">
+    <!-- Translucent tint over KWin's blurred backdrop; the separate mask
+         keeps the large Aurorae shadow outside the blur region. -->
+    <linearGradient id="yoro-glass-active" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#f7fbff" stop-opacity=".79"/>
+      <stop offset=".48" stop-color="#e8f2ff" stop-opacity=".73"/>
+      <stop offset="1" stop-color="#d8e7f8" stop-opacity=".78"/>
+    </linearGradient>
+    <linearGradient id="yoro-glass-inactive" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#f6f8fc" stop-opacity=".87"/>
+      <stop offset="1" stop-color="#e7edf5" stop-opacity=".85"/>
+    </linearGradient>
     <linearGradient
        id="shadow_active">
       <stop
@@ -210,7 +221,7 @@
         <path
            transform="translate(-121,89.063)"
            d="m453 86c-6.648 0-12 5.352-12 12v18h29v-30z"
-           fill="#f5f5f5"
+           fill="url(#yoro-glass-inactive)"
            id="path44" />
         <path
            transform="translate(-121,89.063)"
@@ -287,7 +298,7 @@
        id="path72" />
     <path
        d="m325 176v30h145v-30z"
-       fill="#ffffff"
+       fill="url(#yoro-glass-active)"
        id="path74" />
     <path
        d="m325 176v1h145v-1z"
@@ -355,7 +366,7 @@
        id="path96" />
     <path
        d="m325 176v30h145v-30z"
-       fill="#f5f5f5"
+       fill="url(#yoro-glass-inactive)"
        id="path98" />
     <path
        d="m325 176v1h145v-1z"
@@ -510,7 +521,8 @@
         <path
            transform="translate(239,89.062)"
            d="m93 86c-6.648 0-12 5.352-12 12v18h29v-30z"
-           id="path138" />
+           id="path138"
+           fill="url(#yoro-glass-active)" />
         <path
            transform="translate(239,95.062)"
            d="m93 80c-6.648 0-12 5.352-12 12v0.59961c0-6.4264 5.352-11.6 12-11.6h17v-1z"

@@ -55,6 +55,7 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('Exec=yoro-welcome', (inc / 'etc/xdg/autostart/yoro-welcome.desktop').read_text())
             self.assertTrue((inc / 'usr/local/bin/yoro-welcome').exists())
             kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
+            self.assertIn('blurEnabled=true', kwin)
             self.assertIn('magiclampEnabled=true', kwin)
             self.assertIn('minimizeanimationEnabled=false', kwin)
             self.assertIn('ButtonsOnLeft=\nButtonsOnRight=IAX', kwin)
@@ -74,7 +75,10 @@ class BuildStagingTest(unittest.TestCase):
             self.assertTrue((inc / 'usr/share/matronix-browser/matronix.py').exists())
             self.assertTrue((inc / 'usr/share/applications/yoro-files.desktop').exists())
             self.assertTrue((inc / 'usr/lib/yoroos/hide-foreign-menu-items.py').exists())
-            subprocess.run(['sh', '-n', str(work / 'hooks/normal/9100-yoro.hook.chroot')], check=True)
+            audit = work / 'hooks/normal/9100-yoro.hook.chroot'
+            subprocess.run(['sh', '-n', str(audit)], check=True)
+            self.assertIn('Unexpected antivirus package', audit.read_text())
+            self.assertIn('clamav', audit.read_text())
             hook = work / 'hooks/normal/9200-yoro-boot.hook.binary'
             subprocess.run(['sh', '-n', str(hook)], check=True)
             image_dir = Path(td) / 'image'
