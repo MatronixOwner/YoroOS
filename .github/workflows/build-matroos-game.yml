@@ -1,0 +1,54 @@
+name: Build MatroOS Game candidate
+on:
+  push:
+    branches: ['arena/935b4efd-yoroos']
+    paths:
+      - 'game/**'
+      - 'desktop/**'
+      - 'tests/test_game.py'
+      - '.github/workflows/build-matroos-game.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: matroos-game-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test Game configuration
+        run: |
+          set -euxo pipefail
+          bash -n game/scripts/build-image.sh
+          python3 -m py_compile game/scripts/write-defaults.py
+          python3 -m unittest discover -s tests -p 'test_game.py' -v
+          node --check game/plasma/default-panel.js
+          node --check game/plasma/desktop-layout.js
+      - name: Reclaim runner disk space
+        uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6
+      - name: Fetch pinned visual assets
+        run: |
+          set -euxo pipefail
+          mkdir -p .themes/kora
+          curl -fL --retry 3 https://codeload.github.com/bikass/kora/tar.gz/e63a9e1b4f3b1f647b4cf9c64c1ece58ce45f75a | tar xz --strip-components=1 -C .themes/kora
+          curl -fL --retry 3 -o .themes/bibata.tar.xz https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz
+          tar xJf .themes/bibata.tar.xz -C .themes
+          curl -fL --retry 3 https://raw.githubusercontent.com/ful1e5/Bibata_Cursor/ddb09273cde49faeb6a32282660ff4293f52d6e0/LICENSE -o .themes/bibata-license.txt
+          test -f .themes/kora/kora/index.theme
+          test -f .themes/Bibata-Modern-Ice/index.theme
+      - name: Build and validate Bazzite-based bootc image
+        run: |
+          set -euxo pipefail
+          sudo podman build --pull=always -f game/Containerfile -t localhost/matroos-game:candidate .
+          sudo podman image inspect localhost/matroos-game:candidate --format '{{.Id}}'
+          sudo podman run --rm --entrypoint /bin/bash localhost/matroos-game:candidate -c '
+            set -euxo pipefail
+            test -f /usr/share/wallpapers/MatroOSGame/matroos-game.png
+            test -f /usr/share/applications/matronix-browser.desktop
+            test -f /usr/share/applications/yoro-files.desktop
+            test -f /usr/share/applications/steam.desktop
+            grep -q "panel.location = .bottom." /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
+          '

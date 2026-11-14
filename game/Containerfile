@@ -1,0 +1,20 @@
+# MatroOS Game is a separate Fedora Atomic image derived from Bazzite KDE.
+# Do not replace the Debian-based MatroOS image or its build pipeline.
+FROM ghcr.io/ublue-os/bazzite:stable
+
+COPY desktop/ /tmp/matro-build/desktop/
+COPY game/ /tmp/matro-build/game/
+COPY .themes/kora/ /tmp/matro-build/themes/kora/
+COPY .themes/Bibata-Modern-Ice/ /tmp/matro-build/themes/Bibata-Modern-Ice/
+COPY .themes/bibata-license.txt /tmp/matro-build/themes/bibata-license.txt
+
+RUN /tmp/matro-build/game/scripts/build-image.sh /tmp/matro-build \
+    && rm -rf /tmp/matro-build
+
+# Fail the build rather than publish an image with missing dependencies.
+RUN /usr/bin/python3 -c 'from PyQt6 import QtCore, QtWidgets, QtMultimedia, QtMultimediaWidgets; from PySide6 import QtCore, QtWidgets, QtSvg, QtWebChannel, QtWebEngineCore, QtWebEngineWidgets; import gi; gi.require_version("Gtk", "3.0"); gi.require_version("Vte", "2.91"); from gi.repository import Gtk, Vte' \
+    && test -x /usr/bin/matronix-browser \
+    && test -x /usr/bin/yoro-files \
+    && test -f /usr/share/applications/steam.desktop \
+    && test -f /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
+    && bootc container lint

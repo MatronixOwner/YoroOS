@@ -10,6 +10,14 @@ on:
       - "arena/935b4efd-yoroos"
     tags:
       - "desktop-*-dev*"
+    paths-ignore:
+      - "game/**"
+      - "site/**"
+      - "tests/test_site.mjs"
+      - "tests/site-browser.cjs"
+      - "tests/test_game.py"
+      - ".github/workflows/matroos-pages.yml"
+      - ".github/workflows/build-matroos-game.yml"
 
 permissions:
   contents: write
