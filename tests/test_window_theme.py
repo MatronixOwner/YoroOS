@@ -24,29 +24,16 @@ class WindowThemeTest(unittest.TestCase):
         self.assertEqual(len(set(artwork)), 4)
         self.assertIn('#f9d8dc', artwork[0])  # distinctive close hover
 
-    def test_glass_titlebars_and_blur_mask(self):
+    def test_opaque_original_titlebar(self):
         root = ET.parse(THEME / 'decoration.svg').getroot()
         nodes = {node.get('id'): node for node in root.iter() if node.get('id')}
-        for element, gradient in (('path74', 'active'), ('path138', 'active'),
-                                  ('path98', 'inactive'), ('path44', 'inactive')):
-            self.assertEqual(nodes[element].get('fill'), f'url(#yoro-glass-{gradient})')
-        for gradient in ('yoro-glass-active', 'yoro-glass-inactive'):
-            stops = list(nodes[gradient])
-            self.assertGreaterEqual(len(stops), 2)
-            for stop in stops:
-                self.assertGreater(float(stop.get('stop-opacity')), 0.5)
-                self.assertLess(float(stop.get('stop-opacity')), 1.0)
-        for piece in ('center', 'top', 'topleft', 'topright', 'left', 'right',
-                      'bottom', 'bottomleft', 'bottomright'):
-            self.assertIn('mask-' + piece, nodes)
-
-    def test_application_glass_does_not_fade_text(self):
+        for element in ('path74', 'path138'):
+            self.assertEqual(nodes[element].get('fill'), '#f4f6f9')
+        for element in ('path98', 'path44'):
+            self.assertEqual(nodes[element].get('fill'), '#edf0f4')
+        self.assertFalse(any(key.startswith('mask-') for key in nodes))
         for mode in ('light', 'dark'):
-            sheet = style.get_stylesheet(mode=mode, glass=True)
-            self.assertIn('QWidget#glassWindow', sheet)
-            self.assertIn('rgba(', sheet)
-            self.assertNotIn('windowOpacity', sheet)
-        self.assertNotIn('QWidget#glassWindow', style.get_stylesheet(mode='light'))
+            self.assertNotIn('glassWindow', style.get_stylesheet(mode=mode))
 
     def test_metadata_and_frame_exist(self):
         self.assertTrue((THEME / 'decoration.svg').is_file())

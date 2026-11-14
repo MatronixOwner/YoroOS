@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="115" viewBox="0 0 23 115">
 <g id="active-center" transform="translate(0 0)">
     <rect width="23" height="23" fill="none"/>
-    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#e9eef5" stroke="#d6dfea" stroke-width="0.8"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="none"/>
     <g fill="none" stroke="#455870" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12.2 H15" /></g>
   </g>
 <g id="inactive-center" transform="translate(0 23)">
     <rect width="23" height="23" fill="none"/>
-    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#f0f2f5" stroke="#e5e9ee" stroke-width="0.8"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="none"/>
     <g fill="none" stroke="#a2afbf" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12.2 H15" /></g>
   </g>
 <g id="hover-center" transform="translate(0 46)">
@@ -21,7 +21,7 @@
   </g>
 <g id="deactivated-center" transform="translate(0 92)">
     <rect width="23" height="23" fill="none"/>
-    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="#f3f5f7" stroke="#ebeff3" stroke-width="0.8"/>
+    <rect x="1" y="1" width="21" height="21" rx="6.5" fill="none"/>
     <g fill="none" stroke="#bdc7d2" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12.2 H15" /></g>
   </g>
 </svg>

@@ -36,17 +36,6 @@
   </sodipodi:namedview>
   <defs
      id="defs40">
-    <!-- Translucent tint over KWin's blurred backdrop; the separate mask
-         keeps the large Aurorae shadow outside the blur region. -->
-    <linearGradient id="yoro-glass-active" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#f7fbff" stop-opacity=".79"/>
-      <stop offset=".48" stop-color="#e8f2ff" stop-opacity=".73"/>
-      <stop offset="1" stop-color="#d8e7f8" stop-opacity=".78"/>
-    </linearGradient>
-    <linearGradient id="yoro-glass-inactive" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#f6f8fc" stop-opacity=".87"/>
-      <stop offset="1" stop-color="#e7edf5" stop-opacity=".85"/>
-    </linearGradient>
     <linearGradient
        id="shadow_active">
       <stop
@@ -221,7 +210,7 @@
         <path
            transform="translate(-121,89.063)"
            d="m453 86c-6.648 0-12 5.352-12 12v18h29v-30z"
-           fill="url(#yoro-glass-inactive)"
+           fill="#edf0f4"
            id="path44" />
         <path
            transform="translate(-121,89.063)"
@@ -298,7 +287,7 @@
        id="path72" />
     <path
        d="m325 176v30h145v-30z"
-       fill="url(#yoro-glass-active)"
+       fill="#f4f6f9"
        id="path74" />
     <path
        d="m325 176v1h145v-1z"
@@ -366,7 +355,7 @@
        id="path96" />
     <path
        d="m325 176v30h145v-30z"
-       fill="url(#yoro-glass-inactive)"
+       fill="#edf0f4"
        id="path98" />
     <path
        d="m325 176v1h145v-1z"
@@ -522,7 +511,7 @@
            transform="translate(239,89.062)"
            d="m93 86c-6.648 0-12 5.352-12 12v18h29v-30z"
            id="path138"
-           fill="url(#yoro-glass-active)" />
+           fill="#f4f6f9" />
         <path
            transform="translate(239,95.062)"
            d="m93 80c-6.648 0-12 5.352-12 12v0.59961c0-6.4264 5.352-11.6 12-11.6h17v-1z"
@@ -579,87 +568,4 @@
      width="100%"
      height="100%"
      xlink:href="#decoration-inactive-bottomleft" />
-  <g
-     id="mask-topleft"
-     transform="translate(534,-121.06)">
-    <path
-       transform="translate(-140,115.06)"
-       d="m400 65v51h41v-18c0-6.648 5.352-12 12-12h17v-21z"
-       fill="none"
-       id="path160" />
-    <path
-       d="m313 201.06c-6.648 0-12 5.352-12 12v18h29v-30z"
-       id="path162" />
-  </g>
-  <g
-     id="mask-bottom"
-     transform="translate(539,-80.92)">
-    <path
-       d="m325 288.92v67h145v-67z"
-       fill="none"
-       id="path165" />
-    <path
-       d="m470 276.92h-145v12h145z"
-       id="path167" />
-  </g>
-  <g
-     id="mask-center"
-     transform="translate(-.24 -90)">
-    <path
-       d="m864.24 200v86h145v-86z"
-       id="path170" />
-  </g>
-  <g
-     id="mask-top"
-     transform="translate(539,-96)">
-    <path
-       transform="translate(-200,135)"
-       d="m525 20v21h145v-21z"
-       fill="none"
-       id="path173" />
-    <path
-       d="m325 176v30h145v-30z"
-       id="path175" />
-  </g>
-  <g
-     id="mask-left"
-     transform="translate(514.12,-87.02)">
-    <path
-       d="m279.88 197.02v86l41-0.0155v-85.985z"
-       fill="none"
-       id="path178" />
-    <path
-       d="m320.88 197.02v86h29v-86z"
-       id="path180" />
-  </g>
-  <g
-     id="mask-bottomleft"
-     transform="translate(394,-90)">
-    <path
-       transform="translate(0,90)"
-       d="m441 196c0 6.648 5.352 12 12 12h17v-12z"
-       id="path183" />
-    <path
-       d="m400 286v79h70v-67h-17c-6.648 0-12-5.352-12-12z"
-       fill="none"
-       id="path185" />
-  </g>
-  <use
-     id="mask-topright"
-     transform="matrix(-1,0,0,1,1873,0)"
-     width="100%"
-     height="100%"
-     xlink:href="#mask-topleft" />
-  <use
-     id="mask-bottomright"
-     transform="matrix(-1,0,0,1,1873,0)"
-     width="100%"
-     height="100%"
-     xlink:href="#mask-bottomleft" />
-  <use
-     id="mask-right"
-     transform="matrix(-1,0,0,1,1873,0)"
-     width="100%"
-     height="100%"
-     xlink:href="#mask-left" />
 </svg>

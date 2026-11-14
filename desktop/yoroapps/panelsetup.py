@@ -12,8 +12,9 @@ import sys
 import time
 
 LAUNCHERS = [
-    "applications:matronix-browser.desktop",
     "applications:yoro-files.desktop",
+    "applications:matronix-browser.desktop",
+    "applications:matronix-launcher.desktop",
     "applications:yoro-notepad.desktop",
     "applications:yoro-media.desktop",
     "applications:yoro-paint.desktop",
@@ -21,6 +22,7 @@ LAUNCHERS = [
     "applications:yoro-console.desktop",
     "applications:yoro-computer.desktop",
     "applications:yoro-settings.desktop",
+    "applications:yoro-trash.desktop",
 ]
 
 WALLPAPER = "/usr/share/wallpapers/YoroOS/yoro-horizon.jpg"
@@ -68,7 +70,7 @@ for (var i = 0; i < ps.length; i++) {{
     for (var k = 0; k < ws.length; k++) {{
         if (ws[k].type == "org.kde.plasma.icontasks" || ws[k].type == "org.kde.plasma.taskmanager") isDock = true;
     }}
-    if (isDock) {{ p.location = "{location}"; p.height = {int(height)}; }}
+    if (isDock) {{ p.location = "{location}"; p.height = {int(height)}; p.lengthMode = "fit"; p.floating = true; p.opacity = "opaque"; }}
     for (var j = 0; j < ws.length; j++) {{
         var w = ws[j];
         if (w.type == "org.kde.plasma.kickoff" ||
@@ -104,9 +106,10 @@ for (var n = current.length - 1; n > 0; n--) {{ current[n].remove(); }}
 var dock = current[0];
 dock.location = "bottom";
 dock.alignment = "center";
-dock.height = 64;
+dock.height = 70;
 dock.lengthMode = "fit";
 dock.floating = true;
+dock.opacity = "opaque";
 var oldWidgets = dock.widgets();
 for (var i = 0; i < oldWidgets.length; i++) {{ oldWidgets[i].remove(); }}
 var tasks = dock.addWidget("org.kde.plasma.icontasks");
@@ -115,7 +118,10 @@ tasks.writeConfig("launchers", {_launchers_js()});
 tasks.reloadConfig();
 var top = new Panel;
 top.location = "top";
-top.height = 32;
+top.height = 30;
+top.floating = false;
+top.lengthMode = "fill";
+top.opacity = "opaque";
 var menu = top.addWidget("org.kde.plasma.kickoff");
 menu.currentConfigGroup = ["General"];
 menu.writeConfig("icon", "matroos-logo");

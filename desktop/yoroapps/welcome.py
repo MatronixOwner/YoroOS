@@ -53,7 +53,7 @@ def main():
     if "--show" not in sys.argv and not welcome_state.is_first_run():
         return
     app = QApplication([sys.argv[0]]); style.setup_app(app); app.setStyleSheet(style.get_stylesheet())
-    window = Welcome(); style.enable_glass(app, window); window.show()
+    window = Welcome(); window.show()
     try:
         welcome_state.mark_seen()
     except OSError as exc:

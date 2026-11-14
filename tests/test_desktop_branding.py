@@ -26,6 +26,7 @@ class MenuTest(unittest.TestCase):
             (source / 'foreign.desktop').write_text('[Desktop Entry]\nName=Foreign\nNoDisplay=false\nExec=foreign\n[Desktop Action A]\nName=Test\n')
             (source / 'yoro-files.desktop').write_text('[Desktop Entry]\nName=Yoro\n')
             (source / 'matronix-browser.desktop').write_text('[Desktop Entry]\nName=Browser\n')
+            (source / 'matronix-launcher.desktop').write_text('[Desktop Entry]\nName=Launcher\n')
             self.assertEqual(menus.run(source, dest), 1)
             s = (dest / 'foreign.desktop').read_text()
             self.assertIn('NoDisplay=true\n', s)
@@ -33,12 +34,23 @@ class MenuTest(unittest.TestCase):
             self.assertIn('Exec=foreign', s)
             self.assertFalse((dest / 'yoro-files.desktop').exists())
             self.assertFalse((dest / 'matronix-browser.desktop').exists())
+            self.assertFalse((dest / 'matronix-launcher.desktop').exists())
 
     def test_unparseable_skipped(self):
         self.assertIsNone(menus.transform('[Other]\nName=Something\n'))
 
 
 class PanelTest(unittest.TestCase):
+    def test_dock_layout_is_centered_floating_and_opaque(self):
+        with patch.object(panel, 'run_plasma_script', return_value=True) as run:
+            self.assertTrue(panel.apply_desktop_layout())
+        script = run.call_args.args[0]
+        for fragment in ('dock.alignment = "center"', 'dock.lengthMode = "fit"',
+                         'dock.floating = true', 'dock.opacity = "opaque"',
+                         'top.floating = false', 'top.opacity = "opaque"',
+                         'applications:matronix-launcher.desktop'):
+            self.assertIn(fragment, script)
+
     def test_retries_until_plasma_ready(self):
         with tempfile.TemporaryDirectory() as td, \
              patch.object(panel, '_marker_path', return_value=str(Path(td) / 'sub' / 'marker')), \

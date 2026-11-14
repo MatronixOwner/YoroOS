@@ -123,7 +123,7 @@ class Settings(QMainWindow):
     def _set_accent(self, color):
         try:
             style.save_accent(color)
-            QApplication.instance().setStyleSheet(style.get_stylesheet(color, glass=bool(QApplication.instance().property('matroGlass'))))
+            QApplication.instance().setStyleSheet(style.get_stylesheet(color))
             self.statusBar().showMessage('Цвет сохранён', 3000)
         except OSError as exc:
             QMessageBox.warning(self, 'Оформление', str(exc))
@@ -131,7 +131,7 @@ class Settings(QMainWindow):
     def _set_mode(self, mode):
         try:
             style.save_mode(mode)
-            QApplication.instance().setStyleSheet(style.get_stylesheet(glass=bool(QApplication.instance().property('matroGlass'))))
+            QApplication.instance().setStyleSheet(style.get_stylesheet())
             self.statusBar().showMessage('Тема сохранена', 3000)
         except OSError as exc:
             QMessageBox.warning(self, 'Оформление', str(exc))
@@ -252,7 +252,7 @@ def main():
     app = QApplication(sys.argv)
     style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
-    window = Settings(); style.enable_glass(app, window); window.show(); sys.exit(app.exec())
+    window = Settings(); window.show(); sys.exit(app.exec())
 
 
 if __name__ == '__main__':

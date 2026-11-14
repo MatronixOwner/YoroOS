@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import tarfile
 import unittest
 from pathlib import Path
 
@@ -17,6 +18,7 @@ class BuildStagingTest(unittest.TestCase):
             fake = Path(td) / 'bin'
             fake.mkdir()
             (fake / 'id').write_text('#!/bin/sh\necho 0\n')
+            (fake / 'sha256sum').write_text('#!/bin/sh\nif [ "$1" = -c ]; then cat >/dev/null; exit 0; fi\nexec /usr/bin/sha256sum "$@"\n')
             (fake / 'lb').write_text('#!/bin/sh\n[ "$1" != build ] || touch image.iso\nexit 0\n')
             for p in fake.iterdir(): p.chmod(0o755)
             themes = Path(td) / 'themes'
@@ -30,6 +32,19 @@ class BuildStagingTest(unittest.TestCase):
             (kora / 'kora/places/scalable/user-trash.svg').write_text('<svg/>')
             (kora / 'LICENSE').write_text('Kora license')
             (kora / 'README.md').write_text('Kora upstream sources')
+            upstream = themes / 'matronix-launcher-source'
+            (upstream / 'program_info').mkdir(parents=True)
+            for name in ('LICENSE', 'UPSTREAM_README.md', 'program_info/LICENSE'):
+                (upstream / name).write_text('upstream attribution')
+            launcher = Path(td) / 'launcher'
+            (launcher / 'bin').mkdir(parents=True)
+            icon_dir = launcher / 'share/icons/hicolor/256x256/apps'; icon_dir.mkdir(parents=True)
+            (icon_dir / 'com.matronixprismlauncher.MatronixPrismLauncher.png').write_bytes(b'PNG fixture')
+            for path in (launcher / 'MatronixPrismLauncher', launcher / 'bin/matronixlauncher'):
+                path.write_text('#!/bin/sh\nexit 0\n'); path.chmod(0o755)
+            (launcher / 'portable.txt').write_text('portable')
+            with tarfile.open(themes / 'matronix-launcher.tar.gz', 'w:gz') as tar:
+                for path in launcher.iterdir(): tar.add(path, arcname=path.name)
             (themes / 'bibata-license.txt').write_text('Bibata license')
             (themes / 'Bibata-Modern-Ice').mkdir()
             (themes / 'Bibata-Modern-Ice/index.theme').write_text('[Icon Theme]\nName=Bibata\n')
@@ -37,7 +52,7 @@ class BuildStagingTest(unittest.TestCase):
             subprocess.run(['bash', str(root / 'distro/build-iso.sh'), str(root / 'out')], env=env, check=True, capture_output=True, text=True)
             work = root / 'distro/work/config'
             packages = (work / 'package-lists/yoro.list.chroot').read_text()
-            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'libgl1-mesa-dri', 'libglx-mesa0', 'libegl-mesa0', 'python3-gi', 'gir1.2-vte-2.91', 'pipewire-pulse', 'plymouth', 'adwaita-icon-theme'):
+            for package in ('linux-image-amd64', 'live-boot', 'user-setup', 'plasma-integration', 'qt6-svg-plugins', 'kwin-x11', 'xserver-xorg-input-libinput', 'python3-pyside6.qtwebenginewidgets', 'kwin-common', 'libgl1-mesa-dri', 'libglx-mesa0', 'libegl-mesa0', 'python3-gi', 'gir1.2-vte-2.91', 'openjdk-21-jre', 'openjdk-25-jre', 'libfuse2t64', 'mesa-utils', 'pipewire-pulse', 'plymouth', 'adwaita-icon-theme'):
                 self.assertIn('\n' + package + '\n', packages)
             self.assertNotIn('\nnano\n', packages)
             inc = work / 'includes.chroot'
@@ -60,7 +75,7 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('Exec=yoro-welcome', (inc / 'etc/xdg/autostart/yoro-welcome.desktop').read_text())
             self.assertTrue((inc / 'usr/local/bin/yoro-welcome').exists())
             kwin = (inc / 'etc/skel/.config/kwinrc').read_text()
-            self.assertIn('blurEnabled=true', kwin)
+            self.assertIn('blurEnabled=false', kwin)
             self.assertIn('magiclampEnabled=true', kwin)
             self.assertIn('minimizeanimationEnabled=false', kwin)
             self.assertIn('ButtonsOnLeft=\nButtonsOnRight=IAX', kwin)
@@ -78,6 +93,11 @@ class BuildStagingTest(unittest.TestCase):
             self.assertIn('hid_hyperv\n', modules)
             self.assertIn('hyperv_keyboard\n', modules)
             self.assertTrue((inc / 'usr/share/matronix-browser/matronix.py').exists())
+            self.assertTrue((inc / 'opt/matronixlauncher/MatronixPrismLauncher').exists())
+            self.assertFalse((inc / 'opt/matronixlauncher/portable.txt').exists())
+            self.assertTrue((inc / 'usr/local/bin/matronix-launcher').exists())
+            self.assertTrue((inc / 'usr/share/doc/matronix-launcher/LICENSE').exists())
+            self.assertTrue((inc / 'usr/share/applications/matronix-launcher.desktop').exists())
             self.assertTrue((inc / 'usr/share/applications/yoro-files.desktop').exists())
             self.assertTrue((inc / 'usr/lib/yoroos/hide-foreign-menu-items.py').exists())
             audit = work / 'hooks/normal/9100-yoro.hook.chroot'

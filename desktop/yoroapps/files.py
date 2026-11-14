@@ -370,7 +370,6 @@ def main():
     style.setup_app(app)
     app.setStyleSheet(style.get_stylesheet())
     window = Files(sys.argv[1] if len(sys.argv) > 1 else None)
-    style.enable_glass(app, window)
     window.show()
     sys.exit(app.exec())
 

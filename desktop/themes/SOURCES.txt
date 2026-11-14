@@ -7,6 +7,5 @@ Yoro Arc window decoration (GPL-3.0)
 The window frame, shadows, and optional secondary controls are derived from
 WhiteSur Aurorae by Vince Liuice, commit listed above; see LICENSE-WhiteSur.txt.
 Close, minimize, maximize, and restore SVG buttons are original YoroOS artwork.
-The configuration and metadata are adapted from WhiteSur. YoroOS modifies
-the frame tint with translucent glass gradients; the Aurorae mask is retained
-so KWin blurs the frame rather than the window shadow.
+The configuration and metadata are adapted from WhiteSur. MatroOS uses an
+opaque, custom-tinted window frame and original right-side window controls.

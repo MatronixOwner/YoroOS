@@ -125,13 +125,29 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     display=${display:-:0}
     xauth=${xauth:-/home/yoro/.Xauthority}
     echo "DISPLAY=$display XAUTHORITY=$xauth"
-    printf %s '__GLASS_TEST__' | base64 -d > /tmp/matro-glass-smoke.py
-    chmod 644 /tmp/matro-glass-smoke.py
-    if timeout 45 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/matro-glass-smoke.py; then
-        echo MATRO_GLASS_TEST_OK
+    echo MINECRAFT_RUNTIME_TEST
+    if /usr/lib/jvm/java-21-openjdk-amd64/bin/java -version 2>&1 && /usr/lib/jvm/java-25-openjdk-amd64/bin/java -version 2>&1; then
+        echo MATRO_JAVA_OK
     else
-        echo MATRO_GLASS_TEST_FAILED
+        echo MATRO_JAVA_FAILED
     fi
+    # Start the actual upstream Linux launcher, isolated from normal user data.
+    runuser -u yoro -- mkdir -p /home/yoro/.cache/matro-launcher-test
+    runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/local/bin/matronix-launcher --dir /home/yoro/.cache/matro-launcher-test >/tmp/matro-launcher-test.log 2>&1 &
+    launcher_pid=$!
+    launcher_ok=0
+    for i in $(seq 1 90); do
+        if ! kill -0 "$launcher_pid" 2>/dev/null; then break; fi
+        if runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" xwininfo -root -tree 2>/dev/null | grep -iE 'Matronix(Prism)?Launcher|Matronix Launcher' >/dev/null; then
+            launcher_ok=1; break
+        fi
+        sleep 2
+    done
+    if [ "$launcher_ok" = 1 ]; then echo MATRO_MINECRAFT_LAUNCHER_OK; else echo MATRO_MINECRAFT_LAUNCHER_FAILED; fi
+    cat /tmp/matro-launcher-test.log
+    pkill -u yoro -f '/opt/matronixlauncher/' || true
+    kill "$launcher_pid" 2>/dev/null || true
+    wait "$launcher_pid" 2>/dev/null || true
     printf %s '__TERMINAL_TEST__' | base64 -d > /tmp/yoro-terminal-smoke.py
     chmod 644 /tmp/yoro-terminal-smoke.py
     if timeout 90 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-terminal-smoke.py >/tmp/terminal-test.log 2>&1; then
@@ -157,15 +173,12 @@ echo YORO_DIAGNOSTIC_END
     cmd = cmd.replace('__MATRONIX_TEST__', base64.b64encode(smoke).decode())
     terminal_smoke = Path(__file__).with_name('terminal-smoke.py').read_bytes()
     cmd = cmd.replace('__TERMINAL_TEST__', base64.b64encode(terminal_smoke).decode())
-    glass_smoke = Path(__file__).with_name('glass-smoke.py').read_bytes()
-    cmd = cmd.replace('__GLASS_TEST__', base64.b64encode(glass_smoke).decode())
     # Base64 prevents the echoed input line from resembling output markers.
     encoded = base64.b64encode(cmd.encode()).decode()
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
     captured = False
-    glass_captured = False
-    until = time.monotonic() + 650
+    until = time.monotonic() + 800
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
         if readable:
@@ -173,15 +186,6 @@ echo YORO_DIAGNOSTIC_END
             if not chunk:
                 break
             data += chunk
-            if not glass_captured and b'\r\nMATRO_GLASS_SCREENSHOT_READY\r\n' in data:
-                glass_captured = True
-                try:
-                    with socket.socket(socket.AF_UNIX) as monitor:
-                        monitor.settimeout(10); monitor.connect(str(monitor_sock)); monitor.recv(4096)
-                        monitor.sendall(('screendump ' + str(root / 'glass-screen.ppm') + '\n').encode())
-                        time.sleep(2)
-                except OSError as exc:
-                    print('Glass screenshot failed:', exc, flush=True)
             if not captured and b'\r\nYORO_SCREENSHOT_READY\r\n' in data:
                 captured = True
                 try:
@@ -205,16 +209,20 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The expected Live fallback password is not valid')
     if expect_desktop and b'\r\nYORO_WELCOME_OK\r\n' not in data:
         raise RuntimeError('Yoro welcome did not appear on first login')
-    if expect_desktop and b'\r\nMATRO_GLASS_TEST_OK\r\n' not in data:
-        raise RuntimeError('Matro Files did not request a translucent KWin blur surface')
+    if expect_desktop and b'\r\nMATRO_JAVA_OK\r\n' not in data:
+        raise RuntimeError('Minecraft Java runtimes not available')
+    if expect_desktop and b'\r\nMATRO_MINECRAFT_LAUNCHER_OK\r\n' not in data:
+        raise RuntimeError('The Matronix Minecraft launcher did not open a window')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
     if expect_desktop and 'Theme: __aurorae__svg__YoroArc' not in text:
         raise RuntimeError('Yoro Arc window decoration was not loaded')
     if expect_desktop:
-        for effect in ('blur', 'magiclamp', 'scale'):
+        for effect in ('magiclamp', 'scale'):
             if not re.search(r'EFFECT:' + effect + r'\r?\ntrue\r?\n', text):
                 raise RuntimeError(f'Expected window effect not loaded: {effect}')
+    if expect_desktop and not re.search(r'EFFECT:blur\r?\nfalse\r?\n', text):
+        raise RuntimeError('KWin blur should be disabled')
     if expect_browser and b'\r\nYORO_BROWSER_OK\r\n' not in data:
         raise RuntimeError('Matronix did not start and render the test page')
 

@@ -78,6 +78,13 @@ xorg
 libgl1-mesa-dri
 libglx-mesa0
 libegl-mesa0
+# Java runtimes for current and recent Minecraft Java releases.
+openjdk-21-jre
+openjdk-25-jre
+# AppImage support and graphics diagnostics for troubleshooting.
+libfuse2t64
+mesa-utils
+x11-utils
 xserver-xorg-video-fbdev
 xserver-xorg-input-libinput
 dbus-x11
@@ -154,7 +161,7 @@ theme=__aurorae__svg__YoroArc
 ButtonsOnLeft=
 ButtonsOnRight=IAX
 [Plugins]
-blurEnabled=true
+blurEnabled=false
 magiclampEnabled=true
 minimizeanimationEnabled=false
 scaleEnabled=true
@@ -202,6 +209,32 @@ cat > "$INC/usr/local/bin/matronix-browser" <<'EOFM'
 exec python3 /usr/share/matronix-browser/matronix.py "$@"
 EOFM
 chmod +x "$INC/usr/local/bin/matronix-browser"
+
+# Official MatronixPrismLauncher Linux release, supplied by CI or a local build.
+# An extracted portable release must not keep portable.txt under /opt: its
+# immutable root is not writable by the live user. User data goes to XDG_HOME.
+if [ -z "${YORO_THEME_INPUT_DIR:-}" ]; then
+    echo "Matronix Launcher inputs required; see desktop/README.md" >&2
+    exit 1
+fi
+LAUNCHER_INPUT=$(CDPATH= cd -- "$YORO_THEME_INPUT_DIR" && pwd)
+(cd "$LAUNCHER_INPUT" && echo 'a5a987d4e970bd65e3e9a5612da53fca44b63eb6bdb1429810da0c9a97eedde7  matronix-launcher.tar.gz' | sha256sum -c)
+mkdir -p "$INC/opt/matronixlauncher" "$INC/usr/share/doc/matronix-launcher"
+tar xzf "$LAUNCHER_INPUT/matronix-launcher.tar.gz" --no-same-owner -C "$INC/opt/matronixlauncher"
+test -x "$INC/opt/matronixlauncher/MatronixPrismLauncher"
+test -x "$INC/opt/matronixlauncher/bin/matronixlauncher"
+rm -f "$INC/opt/matronixlauncher/portable.txt"
+cp "$LAUNCHER_INPUT/matronix-launcher-source/LICENSE" "$INC/usr/share/doc/matronix-launcher/LICENSE"
+cp "$LAUNCHER_INPUT/matronix-launcher-source/UPSTREAM_README.md" "$INC/usr/share/doc/matronix-launcher/UPSTREAM_README.md"
+cp "$LAUNCHER_INPUT/matronix-launcher-source/program_info/LICENSE" "$INC/usr/share/doc/matronix-launcher/ARTWORK-LICENSE"
+mkdir -p "$INC/usr/share/icons/hicolor/256x256/apps"
+cp "$INC/opt/matronixlauncher/share/icons/hicolor/256x256/apps/com.matronixprismlauncher.MatronixPrismLauncher.png" "$INC/usr/share/icons/hicolor/256x256/apps/matronix-launcher.png"
+cat > "$INC/usr/local/bin/matronix-launcher" <<'EOML'
+#!/bin/sh
+cd "$HOME" || exit 1
+exec /opt/matronixlauncher/MatronixPrismLauncher "$@"
+EOML
+chmod +x "$INC/usr/local/bin/matronix-launcher"
 
 # The image is live-only; auto-login into the Plasma X11 session in the VM.
 # X11 is selected explicitly and kwin-x11 is installed (not a recommends).

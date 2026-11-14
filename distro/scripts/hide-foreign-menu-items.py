@@ -31,7 +31,7 @@ def run(source, dest):
     dest.mkdir(parents=True, exist_ok=True)
     count = 0
     for path in sorted(source.glob('*.desktop')):
-        if path.name.startswith('yoro-') or path.name == 'matronix-browser.desktop':
+        if path.name.startswith('yoro-') or path.name in ('matronix-browser.desktop', 'matronix-launcher.desktop'):
             continue
         text = transform(path.read_text(encoding='utf-8', errors='replace'))
         if text is not None:
