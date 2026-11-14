@@ -9,7 +9,7 @@
 к публичному GitHub Release в этом репозитории как `.iso`.
 
 Предварительный URL после успешной настройки Pages:
-https://matronixowner.github.io/YoroOS/ . Источник Pages: GitHub Actions;
+https://matronixowner.github.io/MatroOS/ . Источник Pages: GitHub Actions;
 рабочий процесс запускается из активной ветки и использует среду `matroos-pages`.
 Настройка Pages может потребовать права администратора репозитория.
 Работа GitHub Pages не имеет гарантии бессрочности; сайт не зависит от

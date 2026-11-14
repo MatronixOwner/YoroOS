@@ -1,16 +1,14 @@
-// Both names refer to this project before and after a repository rename.
-const REPOS = ['MatronixOwner/YoroOS', 'MatronixOwner/MatroOS'];
-const REPO = typeof location !== 'undefined' && location.pathname.startsWith('/MatroOS/') ? REPOS[1] : REPOS[0];
+const REPO = 'MatronixOwner/MatroOS';
 const RELEASES = `https://api.github.com/repos/${REPO}/releases?per_page=100`;
-const DOWNLOAD_PREFIXES = REPOS.map(repo => `https://github.com/${repo}/releases/download/`);
-const RELEASE_PREFIXES = REPOS.map(repo => `https://github.com/${repo}/releases/tag/`);
+const DOWNLOAD_PREFIX = `https://github.com/${REPO}/releases/download/`;
+const RELEASE_PREFIX = `https://github.com/${REPO}/releases/tag/`;
 
 export function usableReleases(value) {
   if (!Array.isArray(value)) return [];
   return value.filter(release => release && !release.draft && Array.isArray(release.assets))
     .map(release => {
       const iso = release.assets.find(asset => typeof asset?.name === 'string' && /\.iso$/i.test(asset.name)
-        && typeof asset.browser_download_url === 'string' && DOWNLOAD_PREFIXES.some(prefix => asset.browser_download_url.startsWith(prefix)));
+        && typeof asset.browser_download_url === 'string' && asset.browser_download_url.startsWith(DOWNLOAD_PREFIX));
       return iso ? { ...release, iso } : null;
     }).filter(Boolean)
     .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0));
@@ -47,7 +45,7 @@ export function showReleases(releases, doc) {
   }
   // The release-notes link is fixed to the verified repository, not arbitrary API HTML.
   const notes = doc.getElementById('release-notes');
-  if (typeof latest.html_url === 'string' && RELEASE_PREFIXES.some(prefix => latest.html_url.startsWith(prefix))) notes.href = latest.html_url;
+  if (typeof latest.html_url === 'string' && latest.html_url.startsWith(RELEASE_PREFIX)) notes.href = latest.html_url;
 }
 
 export async function loadReleases(doc) {

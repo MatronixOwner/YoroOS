@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { usableReleases, releaseMeta, showReleases, loadReleases } from '../site/app.mjs';
 
-const url = 'https://github.com/MatronixOwner/YoroOS/releases/download/';
+const url = 'https://github.com/MatronixOwner/MatroOS/releases/download/';
 const item = (tag, published, attrs = {}) => ({ name: tag, tag_name: tag, draft: false, prerelease: true,
-  published_at: published, html_url: `https://github.com/MatronixOwner/YoroOS/releases/tag/${tag}`,
+  published_at: published, html_url: `https://github.com/MatronixOwner/MatroOS/releases/tag/${tag}`,
   assets: [{ name: `${tag}.iso`, size: 1073741824, browser_download_url: `${url}${tag}/${tag}.iso` }], ...attrs });
 
 function fakeDoc() {
@@ -44,10 +44,8 @@ test('retains fallback link if GitHub API is unavailable', async () => {
 });
 
 
-test('accepts the MatroOS repository name after a rename', () => {
+test('accepts assets and notes from MatroOS', () => {
   const renamed = item('new', '2026-02-01');
-  renamed.html_url = renamed.html_url.replace('/YoroOS/', '/MatroOS/');
-  renamed.assets[0].browser_download_url = renamed.assets[0].browser_download_url.replace('/YoroOS/', '/MatroOS/');
   const releases = usableReleases([renamed]);
   assert.equal(releases.length, 1);
   const doc = fakeDoc(); showReleases(releases, doc);
