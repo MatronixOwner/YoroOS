@@ -42,7 +42,7 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     environment:
-      name: github-pages
+      name: matroos-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
