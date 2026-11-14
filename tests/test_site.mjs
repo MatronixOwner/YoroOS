@@ -42,3 +42,15 @@ test('retains fallback link if GitHub API is unavailable', async () => {
   assert.equal(doc.getElementById('hero-download').href, 'known-good');
   assert.equal(doc.getElementById('release-list-fallback').hidden, false);
 });
+
+
+test('accepts the MatroOS repository name after a rename', () => {
+  const renamed = item('new', '2026-02-01');
+  renamed.html_url = renamed.html_url.replace('/YoroOS/', '/MatroOS/');
+  renamed.assets[0].browser_download_url = renamed.assets[0].browser_download_url.replace('/YoroOS/', '/MatroOS/');
+  const releases = usableReleases([renamed]);
+  assert.equal(releases.length, 1);
+  const doc = fakeDoc(); showReleases(releases, doc);
+  assert.equal(doc.getElementById('hero-download').href, renamed.assets[0].browser_download_url);
+  assert.equal(doc.getElementById('release-notes').href, renamed.html_url);
+});
