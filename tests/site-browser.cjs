@@ -26,6 +26,9 @@ const server = http.createServer((req, res) => {
       await page.goto(`http://127.0.0.1:${server.address().port}/`, { waitUntil: 'networkidle' });
       assert.equal(await page.locator('#hero-download').getAttribute('href'), 'https://github.com/MatronixOwner/MatroOS/releases/download/test/test.iso');
       assert.equal(await page.locator('#release-name').innerText(), 'MatroOS test release');
+      assert.equal(await page.locator('#start, a[href="#start"]').count(), 0);
+      assert.equal(await page.getByText('Создай виртуальную машину').count(), 0);
+      assert.match(await page.locator('.release-caution').innerText(), /без установщика на диск и сохранения данных/);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${name}: horizontal overflow`);
       assert.deepEqual(errors, []);
       fs.mkdirSync('site-test-output', { recursive: true });

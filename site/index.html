@@ -20,7 +20,6 @@
     <nav class="nav" aria-label="Навигация">
       <a href="#about">О системе</a>
       <a href="#downloads">Выпуски</a>
-      <a href="#start">Как запустить</a>
     </nav>
     <a class="header-link" href="https://github.com/MatronixOwner/MatroOS">GitHub <span aria-hidden="true">↗</span></a>
   </header>
@@ -33,7 +32,6 @@
         <p class="hero-lead">Знакомься с MatroOS — экспериментальной настольной системой от Matronix. Создана, чтобы работать по-твоему.</p>
         <div class="hero-actions">
           <a class="button primary" id="hero-download" href="https://github.com/MatronixOwner/MatroOS/releases/download/matroos-live-1be0867/matroos-live-1be0867-amd64.iso"><span>Скачать MatroOS</span><span class="button-arrow" aria-hidden="true">↓</span></a>
-          <a class="text-link" href="#start">Как начать <span aria-hidden="true">↗</span></a>
         </div>
         <div class="hero-foot"><span>LIVE-СБОРКА</span><span class="hero-foot-separator"></span><span>64-БИТ · UEFI</span><span class="hero-foot-separator"></span><span id="hero-version">ПРЕДВАРИТЕЛЬНЫЙ ВЫПУСК</span></div>
       </div>
@@ -57,21 +55,17 @@
     </section>
 
     <section class="downloads section" id="downloads">
-      <div class="download-top"><div><p class="eyebrow">02 / ВЫПУСКИ</p><h2>Попробуй <span>MatroOS.</span></h2><p class="download-lead">Скачай образ для виртуальной машины. Новые образы появятся здесь после публикации в GitHub Releases.</p></div><span class="download-decoration" aria-hidden="true">↓</span></div>
+      <div class="download-top"><div><p class="eyebrow">02 / ВЫПУСКИ</p><h2>Попробуй <span>MatroOS.</span></h2><p class="download-lead">Скачай образ MatroOS. Новые выпуски появятся здесь после публикации в GitHub Releases.</p></div><span class="download-decoration" aria-hidden="true">↓</span></div>
       <div class="release-card">
         <div class="release-main"><div class="release-symbol" aria-hidden="true">↓</div><div><p class="release-kicker">ПОСЛЕДНИЙ ДОСТУПНЫЙ ОБРАЗ</p><h3 id="release-name">MatroOS Live — непрозрачный рабочий стол</h3><p id="release-meta">64-бит · предварительный выпуск</p></div></div>
         <a id="release-download" class="button white" href="https://github.com/MatronixOwner/MatroOS/releases/download/matroos-live-1be0867/matroos-live-1be0867-amd64.iso"><span>Скачать ISO</span><span aria-hidden="true">↗</span></a>
       </div>
       <p class="release-status" id="release-status" role="status">Проверяем новые выпуски…</p>
+      <p class="release-caution">Образ matroos-live-1be0867 — пробная Live-сборка без установщика на диск и сохранения данных. Возможности других образов указаны в описаниях выпусков.</p>
       <a id="release-notes" class="notes-link" href="https://github.com/MatronixOwner/MatroOS/releases/tag/matroos-live-1be0867">Описание выпуска и SHA256 ↗</a>
       <div class="release-list-wrap"><div class="release-list-title"><h3>Другие выпуски</h3><a href="https://github.com/MatronixOwner/MatroOS/releases">Все на GitHub ↗</a></div><div id="release-list" class="release-list"></div><p id="release-list-fallback" class="muted" hidden>Список временно недоступен. Посмотреть все образы можно в <a href="https://github.com/MatronixOwner/MatroOS/releases">GitHub Releases</a>.</p></div>
     </section>
 
-    <section class="start section" id="start">
-      <div class="section-heading"><div><p class="eyebrow">03 / ПЕРВЫЙ ЗАПУСК</p><h2>Начать <span>просто.</span></h2></div><p class="section-intro">Выбирай образ для своей машины и обязательно прочитай описание выбранного выпуска перед запуском.</p></div>
-      <div class="steps"><article><span>01</span><h3>Скачай образ</h3><p>Выбери ISO-файл выше и дождись завершения загрузки.</p></article><article><span>02</span><h3>Создай виртуальную машину</h3><p>В Hyper-V выбери поколение 2, не менее 4 ГБ памяти и подключи ISO к DVD-приводу.</p></article><article><span>03</span><h3>Запусти систему</h3><p>Для первого теста отключи Secure Boot. Если потребуется вход: пользователь <b>yoro</b>, пароль <b>live</b>.</p></article></div>
-      <div class="notice"><span aria-hidden="true">i</span><p><strong>Важно:</strong> Live-сборки без установщика не сохраняют изменения после выключения. Возможности конкретного образа проверяй в описании выпуска.</p></div>
-    </section>
   </main>
   <footer><div><a class="brand footer-brand" href="#top"><img src="assets/matroos-mark.png" width="32" height="32" alt=""><span>MatroOS<span class="brand-dot">.</span></span></a><p>Часть мира Matronix.</p></div><div class="footer-links"><a href="https://github.com/MatronixOwner/MatroOS">Исходный код ↗</a><a href="https://github.com/MatronixOwner/MatroOS/releases">Все выпуски ↗</a></div><p class="footer-note">Экспериментальный проект на Debian и Plasma.<br>Не связан с Apple или Microsoft.</p></footer>
 </body>
