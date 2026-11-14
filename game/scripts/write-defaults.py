@@ -6,7 +6,8 @@ import sys
 
 root = Path(sys.argv[1])
 settings = {
-    'kdeglobals': {'KDE': {'LookAndFeelPackage': 'org.kde.breezedark.desktop'},
+    'kdeglobals': {'KDE': {'LookAndFeelPackage': 'org.kde.breeze.desktop'},
+                   'General': {'ColorScheme': 'BreezeLight'},
                    'Icons': {'Theme': 'kora'}},
     'kcminputrc': {'Mouse': {'cursorTheme': 'Bibata-Modern-Ice', 'cursorSize': '24'}},
     'kwinrc': {'org.kde.kdecoration2': {'library': 'org.kde.kwin.aurorae',

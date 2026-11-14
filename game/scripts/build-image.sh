@@ -10,10 +10,11 @@ dnf5 install -y python3-pyqt6 python3-pyside6 python3-gobject gtk3 vte291
 a="$input/desktop"
 install -d /usr/share/yoroos /usr/share/matronix-browser /usr/share/applications
 cp -a "$a/yoroapps" /usr/share/yoroos/
+/usr/bin/python3 "$input/game/scripts/patch-apps.py" /usr/share/yoroos/yoroapps "$input/game/overrides"
 cp -a "$a/matronix-browser/matronix.py" "$a/matronix-browser/assets" /usr/share/matronix-browser/
 for pair in notepad:yoro-notepad files:yoro-files media:yoro-media \
     settings:yoro-settings console:yoro-console computer:yoro-computer \
-    trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint; do
+    trashapp:yoro-trash calculator:yoro-calculator paint:yoro-paint welcome:yoro-welcome; do
     module=${pair%%:*}; binary=${pair##*:}
     printf '#!/bin/sh\nPYTHONPATH="/usr/share/yoroos${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m yoroapps.%s "$@"\n' "$module" > "/usr/bin/$binary"
     chmod 0755 "/usr/bin/$binary"
@@ -27,6 +28,18 @@ cp "$a"/applications/*.desktop /usr/share/applications/
 install -d /usr/share/icons/hicolor/scalable/apps /usr/share/icons/hicolor/512x512/apps
 cp "$a"/icons/*.svg /usr/share/icons/hicolor/scalable/apps/
 install -m 0644 "$a/icons/matroos-logo.png" /usr/share/icons/hicolor/512x512/apps/matroos-logo.png
+
+# A per-user welcome runs once, without changing the panel after first login.
+install -d /etc/xdg/autostart
+cat > /etc/xdg/autostart/matroos-game-welcome.desktop <<'WELCOME'
+[Desktop Entry]
+Type=Application
+Name=MatroOS Game Welcome
+Exec=yoro-welcome
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true
+WELCOME
 
 # Keep the selected Kora and Bibata artwork and their licenses.
 install -d /usr/share/icons /usr/share/doc/matroos-game/themes

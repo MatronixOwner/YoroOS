@@ -1,9 +1,12 @@
 """Regression checks for MatroOS Game without touching a user's desktop."""
 import configparser
+import importlib.util
+import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,7 +46,29 @@ class GameBuildTest(unittest.TestCase):
             self.assertIn(app, panel)
         self.assertIn('matroos-logo', panel)
         self.assertNotIn('.remove()', panel)
-        self.assertNotIn('autostart', (ROOT / 'game/scripts/build-image.sh').read_text())
+        self.assertNotIn('Exec=yoro-panel-setup', (ROOT / 'game/scripts/build-image.sh').read_text())
+
+    def test_game_settings_do_not_revert_to_live_dock(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'apps'
+            shutil.copytree(ROOT / 'desktop/yoroapps', target)
+            subprocess.run(['python3', str(ROOT / 'game/scripts/patch-apps.py'), str(target),
+                            str(ROOT / 'game/overrides')], check=True)
+            self.assertNotIn('Меню, индикаторы и часы остаются на верхней панели', (target / 'settings.py').read_text())
+            self.assertNotIn('Live-сессия: изменения исчезнут', (target / 'welcome.py').read_text())
+            self.assertIn('MatroOSGame', (target / 'settings.py').read_text())
+            spec = importlib.util.spec_from_file_location('game_panel', target / 'panelsetup.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            with patch.object(module, '_qdbus', return_value='/usr/bin/qdbus'), \
+                 patch.object(module.subprocess, 'run') as run:
+                run.return_value.returncode = 0
+                self.assertTrue(module.apply_panel_preset('bottom', 54))
+                script = run.call_args.args[0][-1]
+                self.assertIn('lengthMode = "fill"', script)
+                self.assertIn('floating = false', script)
+                self.assertNotIn('launchers', script)
+                self.assertFalse(module.apply_panel_preset('invalid', 54))
 
 
 if __name__ == '__main__':
