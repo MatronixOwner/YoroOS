@@ -1,0 +1,49 @@
+name: MatroOS website
+on:
+  push:
+    branches: ["arena/935b4efd-yoroos"]
+    paths: ["site/**", "tests/test_site.mjs", "tests/site-browser.cjs", ".github/workflows/matroos-pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: matroos-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify release selection and fallback
+        run: node --test tests/test_site.mjs
+      - name: Test desktop and mobile in Chrome
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock playwright-core
+          export CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium-browser || command -v chromium)"
+          test -n "$CHROME_PATH"
+          node tests/site-browser.cjs
+      - name: Upload website preview
+        if: always() && hashFiles('site-test-output/*.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: matroos-website-preview
+          path: site-test-output/*.png
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

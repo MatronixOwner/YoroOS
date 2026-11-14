@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Matronix Launcher
-Comment=Лаунчер Minecraft Java Edition
-Exec=matronix-launcher
-Icon=matronix-launcher
-Categories=Game;
-Terminal=false
-StartupNotify=true

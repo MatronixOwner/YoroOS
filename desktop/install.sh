@@ -30,11 +30,7 @@ exec python3 /usr/share/matronix-browser/matronix.py "$@"
 EOFM
 chmod +x "$D/usr/local/bin/matronix-browser"
 
-for desktop in "$HERE"/applications/*.desktop; do
-    # The optional prebuilt launcher is staged only by the ISO builder.
-    [ "$(basename "$desktop")" = matronix-launcher.desktop ] && continue
-    cp "$desktop" "$D/usr/share/applications/"
-done
+cp "$HERE"/applications/*.desktop "$D/usr/share/applications/"
 install -d "$D/usr/share/icons/hicolor/scalable/apps" "$D/usr/share/wallpapers/YoroOS" "$D/etc/xdg/autostart"
 cp "$HERE"/icons/*.svg "$D/usr/share/icons/hicolor/scalable/apps/"
 install -d "$D/usr/share/icons/hicolor/512x512/apps"

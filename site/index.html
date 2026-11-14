@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MatroOS — экспериментальная настольная система от Matronix. Скачивайте актуальные образы и следите за выпусками.">
+  <meta name="theme-color" content="#f7f7f4">
+  <title>MatroOS — пространство для своего</title>
+  <link rel="icon" type="image/png" href="assets/matroos-mark.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.mjs" type="module"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Перейти к содержимому</a>
+  <header class="header">
+    <a class="brand" href="#top" aria-label="MatroOS — на главную">
+      <img src="assets/matroos-mark.png" width="36" height="36" alt="">
+      <span>MatroOS<span class="brand-dot">.</span></span>
+    </a>
+    <nav class="nav" aria-label="Навигация">
+      <a href="#about">О системе</a>
+      <a href="#downloads">Выпуски</a>
+      <a href="#start">Как запустить</a>
+    </nav>
+    <a class="header-link" href="https://github.com/MatronixOwner/YoroOS">GitHub <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> MATRONIX / DESKTOP OS <span class="eyebrow-line"></span> 01</p>
+        <h1>Твоё место.<br><span>Твои правила.</span></h1>
+        <p class="hero-lead">Знакомься с MatroOS — экспериментальной настольной системой от Matronix. Создана, чтобы работать по-твоему.</p>
+        <div class="hero-actions">
+          <a class="button primary" id="hero-download" href="https://github.com/MatronixOwner/YoroOS/releases/download/matroos-live-255fddb99c7c/matroos-live-255fddb99c7c-amd64.iso"><span>Скачать MatroOS</span><span class="button-arrow" aria-hidden="true">↓</span></a>
+          <a class="text-link" href="#start">Как начать <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-foot"><span>LIVE-СБОРКА</span><span class="hero-foot-separator"></span><span>64-БИТ · UEFI</span><span class="hero-foot-separator"></span><span id="hero-version">ПРЕДВАРИТЕЛЬНЫЙ ВЫПУСК</span></div>
+      </div>
+      <div class="hero-art" aria-label="Декоративное изображение с фирменными обоями MatroOS">
+        <img class="hero-wallpaper" src="assets/horizon.jpg" alt="">
+        <div class="art-top"><span>MATROOS</span><span>DESKTOP EDITION &nbsp; / &nbsp; 01</span></div>
+        <div class="art-mark"><img src="assets/matroos-mark.png" alt="" width="200" height="200"></div>
+        <div class="art-bottom"><span>СОЗДАНО ДЛЯ ВАС</span><span class="art-orbit" aria-hidden="true">✳</span></div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true"><span>ПРОСТОТА</span><i></i><span>СВОЙ СТИЛЬ</span><i></i><span>ПРОСТРАНСТВО ДЛЯ ИДЕЙ</span><i></i><span>BY MATRONIX</span></div>
+
+    <section class="about section" id="about">
+      <div class="section-heading"><div><p class="eyebrow">01 / О СИСТЕМЕ</p><h2>Всё необходимое.<br><span>Ничего лишнего.</span></h2></div><p class="section-intro">Система в разработке: мы собираем привычные вещи в собственное пространство Matronix.</p></div>
+      <div class="features">
+        <article><span class="feature-number">01</span><div class="feature-icon blue" aria-hidden="true">↗</div><h3>Своё пространство</h3><p>Рабочий стол, приложения и внешний вид MatroOS. Браузер Matronix уже внутри.</p></article>
+        <article><span class="feature-number">02</span><div class="feature-icon mint" aria-hidden="true">▦</div><h3>Знакомая основа</h3><p>Внутри — Debian 13, Linux и KDE Plasma. Это не система на собственном ядре.</p></article>
+        <article><span class="feature-number">03</span><div class="feature-icon violet" aria-hidden="true">◎</div><h3>Открытая разработка</h3><p>Исходный код и выпуски проекта доступны на GitHub. Следи за изменениями вместе с нами.</p></article>
+      </div>
+    </section>
+
+    <section class="downloads section" id="downloads">
+      <div class="download-top"><div><p class="eyebrow">02 / ВЫПУСКИ</p><h2>Попробуй <span>MatroOS.</span></h2><p class="download-lead">Скачай образ для виртуальной машины. Новые образы появятся здесь после публикации в GitHub Releases.</p></div><span class="download-decoration" aria-hidden="true">↓</span></div>
+      <div class="release-card">
+        <div class="release-main"><div class="release-symbol" aria-hidden="true">↓</div><div><p class="release-kicker">ПОСЛЕДНИЙ ДОСТУПНЫЙ ОБРАЗ</p><h3 id="release-name">MatroOS Live — Kora и стекло</h3><p id="release-meta">64-бит · предварительный выпуск</p></div></div>
+        <a id="release-download" class="button white" href="https://github.com/MatronixOwner/YoroOS/releases/download/matroos-live-255fddb99c7c/matroos-live-255fddb99c7c-amd64.iso"><span>Скачать ISO</span><span aria-hidden="true">↗</span></a>
+      </div>
+      <p class="release-status" id="release-status" role="status">Проверяем новые выпуски…</p>
+      <a id="release-notes" class="notes-link" href="https://github.com/MatronixOwner/YoroOS/releases/tag/matroos-live-255fddb99c7c">Описание выпуска и SHA256 ↗</a>
+      <div class="release-list-wrap"><div class="release-list-title"><h3>Другие выпуски</h3><a href="https://github.com/MatronixOwner/YoroOS/releases">Все на GitHub ↗</a></div><div id="release-list" class="release-list"></div><p id="release-list-fallback" class="muted" hidden>Список временно недоступен. Посмотреть все образы можно в <a href="https://github.com/MatronixOwner/YoroOS/releases">GitHub Releases</a>.</p></div>
+    </section>
+
+    <section class="start section" id="start">
+      <div class="section-heading"><div><p class="eyebrow">03 / ПЕРВЫЙ ЗАПУСК</p><h2>Начать <span>просто.</span></h2></div><p class="section-intro">Выбирай образ для своей машины и обязательно прочитай описание выбранного выпуска перед запуском.</p></div>
+      <div class="steps"><article><span>01</span><h3>Скачай образ</h3><p>Выбери ISO-файл выше и дождись завершения загрузки.</p></article><article><span>02</span><h3>Создай виртуальную машину</h3><p>В Hyper-V выбери поколение 2, не менее 4 ГБ памяти и подключи ISO к DVD-приводу.</p></article><article><span>03</span><h3>Запусти систему</h3><p>Для первого теста отключи Secure Boot. Если потребуется вход: пользователь <b>yoro</b>, пароль <b>live</b>.</p></article></div>
+      <div class="notice"><span aria-hidden="true">i</span><p><strong>Важно:</strong> Live-сборки без установщика не сохраняют изменения после выключения. Возможности конкретного образа проверяй в описании выпуска.</p></div>
+    </section>
+  </main>
+  <footer><div><a class="brand footer-brand" href="#top"><img src="assets/matroos-mark.png" width="32" height="32" alt=""><span>MatroOS<span class="brand-dot">.</span></span></a><p>Часть мира Matronix.</p></div><div class="footer-links"><a href="https://github.com/MatronixOwner/YoroOS">Исходный код ↗</a><a href="https://github.com/MatronixOwner/YoroOS/releases">Все выпуски ↗</a></div><p class="footer-note">Экспериментальный проект на Debian и Plasma.<br>Не связан с Apple или Microsoft.</p></footer>
+</body>
+</html>

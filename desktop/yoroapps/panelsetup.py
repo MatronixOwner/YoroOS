@@ -14,7 +14,6 @@ import time
 LAUNCHERS = [
     "applications:yoro-files.desktop",
     "applications:matronix-browser.desktop",
-    "applications:matronix-launcher.desktop",
     "applications:yoro-notepad.desktop",
     "applications:yoro-media.desktop",
     "applications:yoro-paint.desktop",

@@ -125,29 +125,6 @@ if id yoro >/dev/null 2>&1 && pgrep -u yoro -x plasmashell >/dev/null; then
     display=${display:-:0}
     xauth=${xauth:-/home/yoro/.Xauthority}
     echo "DISPLAY=$display XAUTHORITY=$xauth"
-    echo MINECRAFT_RUNTIME_TEST
-    if /usr/lib/jvm/java-21-openjdk-amd64/bin/java -version 2>&1 && /usr/lib/jvm/java-25-openjdk-amd64/bin/java -version 2>&1; then
-        echo MATRO_JAVA_OK
-    else
-        echo MATRO_JAVA_FAILED
-    fi
-    # Start the actual upstream Linux launcher, isolated from normal user data.
-    runuser -u yoro -- mkdir -p /home/yoro/.cache/matro-launcher-test
-    runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" /usr/local/bin/matronix-launcher --dir /home/yoro/.cache/matro-launcher-test >/tmp/matro-launcher-test.log 2>&1 &
-    launcher_pid=$!
-    launcher_ok=0
-    for i in $(seq 1 90); do
-        if ! kill -0 "$launcher_pid" 2>/dev/null; then break; fi
-        if runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" xwininfo -root -tree 2>/dev/null | grep -iE 'Matronix(Prism)?Launcher|Matronix Launcher' >/dev/null; then
-            launcher_ok=1; break
-        fi
-        sleep 2
-    done
-    if [ "$launcher_ok" = 1 ]; then echo MATRO_MINECRAFT_LAUNCHER_OK; else echo MATRO_MINECRAFT_LAUNCHER_FAILED; fi
-    cat /tmp/matro-launcher-test.log
-    pkill -u yoro -f '/opt/matronixlauncher/' || true
-    kill "$launcher_pid" 2>/dev/null || true
-    wait "$launcher_pid" 2>/dev/null || true
     printf %s '__TERMINAL_TEST__' | base64 -d > /tmp/yoro-terminal-smoke.py
     chmod 644 /tmp/yoro-terminal-smoke.py
     if timeout 90 runuser -u yoro -- env DISPLAY="$display" XAUTHORITY="$xauth" XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS="$bus" PYTHONUNBUFFERED=1 /usr/bin/python3 /tmp/yoro-terminal-smoke.py >/tmp/terminal-test.log 2>&1; then
@@ -178,7 +155,7 @@ echo YORO_DIAGNOSTIC_END
     sock.sendall(('echo ' + encoded + ' | base64 -d | /bin/sh\n').encode())
     data = b''
     captured = False
-    until = time.monotonic() + 800
+    until = time.monotonic() + 650
     while time.monotonic() < until:
         readable, _, _ = select.select([sock], [], [], 1)
         if readable:
@@ -209,10 +186,6 @@ echo YORO_DIAGNOSTIC_END
         raise RuntimeError('The expected Live fallback password is not valid')
     if expect_desktop and b'\r\nYORO_WELCOME_OK\r\n' not in data:
         raise RuntimeError('Yoro welcome did not appear on first login')
-    if expect_desktop and b'\r\nMATRO_JAVA_OK\r\n' not in data:
-        raise RuntimeError('Minecraft Java runtimes not available')
-    if expect_desktop and b'\r\nMATRO_MINECRAFT_LAUNCHER_OK\r\n' not in data:
-        raise RuntimeError('The Matronix Minecraft launcher did not open a window')
     if expect_desktop and b'\r\nYORO_TERMINAL_OK\r\n' not in data:
         raise RuntimeError('Yoro terminal did not start an interactive shell')
     if expect_desktop and 'Theme: __aurorae__svg__YoroArc' not in text:

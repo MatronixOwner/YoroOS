@@ -62,12 +62,6 @@ jobs:
           mkdir -p .themes/kora
           curl -fL --retry 3 https://codeload.github.com/bikass/kora/tar.gz/e63a9e1b4f3b1f647b4cf9c64c1ece58ce45f75a | tar xz --strip-components=1 -C .themes/kora
           test -f .themes/kora/kora/index.theme && test -f .themes/kora/LICENSE
-          # Official Linux build of the user's Matronix Launcher, pinned by digest.
-          mkdir -p .themes/matronix-launcher-source
-          curl -fL --retry 3 -o .themes/matronix-launcher.tar.gz https://github.com/MatronixOwner/MatronixLauncher/releases/download/v0.1.0-alpha.14/MatronixPrismLauncher-Linux-portable.tar.gz
-          echo 'a5a987d4e970bd65e3e9a5612da53fca44b63eb6bdb1429810da0c9a97eedde7  .themes/matronix-launcher.tar.gz' | sha256sum -c
-          curl -fL --retry 3 https://codeload.github.com/MatronixOwner/MatronixLauncher/tar.gz/cd0acc6aae0f27c42ded06b7518cf9358cc65002 | tar xz --strip-components=1 -C .themes/matronix-launcher-source
-          test -f .themes/matronix-launcher-source/LICENSE && test -f .themes/matronix-launcher-source/program_info/LICENSE
           curl -fL --retry 3 -o .themes/bibata.tar.xz https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz
           tar xJf .themes/bibata.tar.xz -C .themes
           test -f .themes/Bibata-Modern-Ice/index.theme

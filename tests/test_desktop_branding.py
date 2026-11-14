@@ -26,7 +26,6 @@ class MenuTest(unittest.TestCase):
             (source / 'foreign.desktop').write_text('[Desktop Entry]\nName=Foreign\nNoDisplay=false\nExec=foreign\n[Desktop Action A]\nName=Test\n')
             (source / 'yoro-files.desktop').write_text('[Desktop Entry]\nName=Yoro\n')
             (source / 'matronix-browser.desktop').write_text('[Desktop Entry]\nName=Browser\n')
-            (source / 'matronix-launcher.desktop').write_text('[Desktop Entry]\nName=Launcher\n')
             self.assertEqual(menus.run(source, dest), 1)
             s = (dest / 'foreign.desktop').read_text()
             self.assertIn('NoDisplay=true\n', s)
@@ -34,7 +33,6 @@ class MenuTest(unittest.TestCase):
             self.assertIn('Exec=foreign', s)
             self.assertFalse((dest / 'yoro-files.desktop').exists())
             self.assertFalse((dest / 'matronix-browser.desktop').exists())
-            self.assertFalse((dest / 'matronix-launcher.desktop').exists())
 
     def test_unparseable_skipped(self):
         self.assertIsNone(menus.transform('[Other]\nName=Something\n'))
@@ -48,7 +46,7 @@ class PanelTest(unittest.TestCase):
         for fragment in ('dock.alignment = "center"', 'dock.lengthMode = "fit"',
                          'dock.floating = true', 'dock.opacity = "opaque"',
                          'top.floating = false', 'top.opacity = "opaque"',
-                         'applications:matronix-launcher.desktop'):
+                         'applications:matronix-browser.desktop'):
             self.assertIn(fragment, script)
 
     def test_retries_until_plasma_ready(self):
