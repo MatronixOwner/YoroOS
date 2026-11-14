@@ -49,6 +49,14 @@ for theme in org.kde.breeze.desktop org.kde.breezedark.desktop org.kde.breezetwi
     fi
 done
 
+# Keep Fedora/Bazzite ID and version fields for compatibility, but brand the
+# human-readable OS name. Package/update identity remains upstream-compatible.
+if grep -q '^PRETTY_NAME=' /usr/lib/os-release; then
+    sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="MatroOS Game (Bazzite)"/' /usr/lib/os-release
+else
+    echo 'PRETTY_NAME="MatroOS Game (Bazzite)"' >> /usr/lib/os-release
+fi
+
 # Defaults only; user settings remain free to override these after installation.
 install -d /etc/xdg
 /usr/bin/python3 "$input/game/scripts/write-defaults.py" /etc/xdg

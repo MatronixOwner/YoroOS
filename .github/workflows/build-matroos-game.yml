@@ -52,3 +52,23 @@ jobs:
             test -f /usr/share/applications/steam.desktop
             grep -q "panel.location = .bottom." /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
           '
+
+      - name: Build disposable QCOW2 for UEFI boot test
+        run: |
+          set -euxo pipefail
+          mkdir -p game-ci-output
+          sudo podman run --rm --privileged --security-opt label=type:unconfined_t \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v "$PWD/game/test-disk.toml:/config.toml:ro" \
+            -v "$PWD/game-ci-output:/output" \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --local --type qcow2 --config /config.toml --use-librepo=True \
+            localhost/matroos-game:candidate
+          sudo chown -R "$(id -u):$(id -g)" game-ci-output
+          test -f game-ci-output/qcow2/disk.qcow2
+      - name: Check UEFI boot in QEMU
+        run: |
+          set -euxo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 ovmf
+          python3 game/scripts/qemu-smoke.py game-ci-output/qcow2/disk.qcow2

@@ -1,0 +1,12 @@
+# CI-only QCOW: never ship or publish this disk or its known credentials.
+[customizations.kernel]
+append = "console=tty0 console=ttyS0,115200n8"
+
+[[customizations.user]]
+name = "game-ci"
+password = "ci-only-do-not-use"
+groups = ["wheel"]
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "20 GiB"
