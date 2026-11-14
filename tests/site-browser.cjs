@@ -17,7 +17,7 @@ const server = http.createServer((req, res) => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, headless: true, args: ['--no-sandbox'] });
   try {
-    for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844]]) {
+    for (const [name, width, height] of [['desktop', 1440, 1000], ['tablet', 768, 1024], ['mobile', 390, 844], ['small-mobile', 320, 720]]) {
       const page = await browser.newPage({ viewport: { width, height } });
       const errors = []; page.on('pageerror', error => errors.push(error.message));
       await page.route('https://api.github.com/repos/MatronixOwner/MatroOS/releases?per_page=100', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
@@ -31,8 +31,11 @@ const server = http.createServer((req, res) => {
       assert.match(await page.locator('.release-caution').innerText(), /без установщика на диск и сохранения данных/);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${name}: horizontal overflow`);
       assert.deepEqual(errors, []);
+      assert.equal(await page.locator('.art-mark img').evaluate(el => getComputedStyle(el).animationName), 'float');
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      assert.ok(parseFloat(await page.locator('.art-mark img').evaluate(el => getComputedStyle(el).animationDuration)) < 0.001);
       fs.mkdirSync('site-test-output', { recursive: true });
-      await page.screenshot({ path: `site-test-output/${name}.png`, fullPage: true });
+      await page.screenshot({ path: `site-test-output/${name}.png`, fullPage: true, animations: 'disabled' });
       await page.close();
     }
   } finally { await browser.close(); server.close(); }
