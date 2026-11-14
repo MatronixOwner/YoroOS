@@ -1,0 +1,51 @@
+name: Publish verified MatroOS ISO
+on:
+  push:
+    branches: ['arena/935b4efd-yoroos']
+    paths: ['.github/workflows/publish-matroos-iso.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BUILD_RUN: '43563896001'
+      BUILD_SHA: '1be086750180920bb050ac65c7355e2af88b871b'
+      TAG: 'matroos-live-1be0867'
+    steps:
+      - name: Wait for the exact tested build
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 210); do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN" > run.json
+            jq -e --arg sha "$BUILD_SHA" '.head_sha == $sha' run.json > /dev/null
+            status=$(jq -r .status run.json)
+            if [ "$status" = completed ]; then
+              jq -e '.conclusion == "success"' run.json
+              gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN/jobs" > jobs.json
+              jq -e '[.jobs[] | .steps[] | select(.name == "Build ISO in Debian (trixie) container" or .name == "Verify UEFI, Live session and Matronix in QEMU" or .name == "Upload ISO artifact") | .conclusion] == ["success","success","success"]' jobs.json
+              exit 0
+            fi
+            sleep 45
+          done
+          echo 'Timed out waiting for verified ISO' >&2
+          exit 1
+      - uses: actions/download-artifact@v4
+        with:
+          name: yoroos-desktop-amd64-iso
+          run-id: ${{ env.BUILD_RUN }}
+          github-token: ${{ github.token }}
+          path: release-files
+      - name: Verify checksum and publish the draft release
+        run: |
+          set -euxo pipefail
+          cd release-files
+          sha256sum -c yoroos-desktop-amd64.iso.sha256
+          mv yoroos-desktop-amd64.iso matroos-live-1be0867-amd64.iso
+          sha256sum matroos-live-1be0867-amd64.iso > SHA256SUMS.txt
+          gh release upload "$TAG" matroos-live-1be0867-amd64.iso SHA256SUMS.txt --clobber
+          gh release edit "$TAG" --draft=false
